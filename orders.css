@@ -1,0 +1,621 @@
+/* orders.css - дополнительные стили для админского режима */
+
+/* Панель режима */
+.mode-info {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.mode-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+}
+
+.mode-badge.admin-mode {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.mode-description {
+    opacity: 0.9;
+    font-size: 0.9rem;
+    color: white;
+}
+
+/* Админские фильтры */
+.admin-filters {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+}
+
+.filters-row {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-group label {
+    font-weight: 500;
+    color: var(--text-dark);
+    white-space: nowrap;
+    font-size: 0.9rem;
+}
+
+.filter-select {
+    padding: 8px 12px;
+    border: 1px solid var(--gray-light);
+    border-radius: 6px;
+    background: var(--white);
+    min-width: 150px;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.15);
+}
+
+/* Админская таблица */
+.admin-orders-table {
+    margin-top: 20px;
+}
+
+.table-container {
+    overflow-x: auto;
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.orders-table th {
+    background: var(--background-light);
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-dark);
+    border-bottom: 2px solid var(--gray-light);
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.orders-table td {
+    padding: 15px;
+    border-bottom: 1px solid var(--gray-light);
+    vertical-align: top;
+    font-size: 0.9rem;
+}
+
+.orders-table tr:hover {
+    background: var(--background-light);
+}
+
+.orders-table .small-text {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-top: 4px;
+}
+
+.customer-info {
+    line-height: 1.4;
+}
+
+.customer-info strong {
+    display: block;
+    margin-bottom: 2px;
+}
+
+/* Действия в таблице */
+.admin-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid var(--gray-light);
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-dark);
+    transition: var(--transition);
+    font-size: 0.9rem;
+}
+
+.btn-icon:hover {
+    background: var(--primary-light);
+    color: var(--white);
+    border-color: var(--primary-light);
+    transform: translateY(-2px);
+}
+
+.btn-icon.danger {
+    color: #f44336;
+    border-color: #f44336;
+}
+
+.btn-icon.danger:hover {
+    background: #f44336;
+    color: white;
+}
+
+/* Сводная статистика */
+.admin-summary {
+    margin-top: 20px;
+}
+
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.summary-card {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: var(--transition);
+}
+
+.summary-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(30, 136, 229, 0.2);
+}
+
+.summary-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.summary-info {
+    flex: 1;
+}
+
+.summary-info h4 {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.summary-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    display: block;
+}
+
+/* Хедер с кнопками */
+.header-actions-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Ссылки в меню пользователя */
+.user-links .admin-link {
+    color: #ff9800 !important;
+    border-left: 3px solid #ff9800;
+}
+
+.user-links .admin-link:hover {
+    background: rgba(255, 152, 0, 0.1) !important;
+}
+
+.user-role {
+    font-size: 0.85rem;
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-top: 3px;
+}
+
+/* Адаптивность */
+@media (max-width: 992px) {
+    .summary-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .filters-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .filter-select {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .orders-table th,
+    .orders-table td {
+        padding: 10px 8px;
+        font-size: 0.85rem;
+    }
+    
+    .admin-actions {
+        flex-direction: column;
+    }
+    
+    .btn-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+    
+    .summary-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .summary-card {
+        padding: 15px;
+    }
+    
+    .header-actions-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+        width: 100%;
+    }
+    
+    .header-actions-group .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .mode-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .mode-description {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .orders-table {
+        font-size: 0.8rem;
+    }
+    
+    .summary-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+    
+    .summary-value {
+        font-size: 1.3rem;
+    }
+    
+    .mode-panel {
+        padding: 12px 15px;
+    }
+    
+    .mode-badge {
+        font-size: 0.85rem;
+        padding: 5px 10px;
+    }
+    
+    .mode-description {
+        font-size: 0.85rem;
+    }
+}
+
+/* Стили для модального окна изменения статуса */
+#statusChangeModal .modal-content {
+    max-width: 500px;
+}
+
+#statusChangeModal textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--gray-light);
+    border-radius: 6px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.9rem;
+    resize: vertical;
+}
+
+#statusChangeModal textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.15);
+}
+
+/* Стили для переключателя режима в хедере */
+.mode-switcher .btn-sm {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    border-radius: 20px;
+}
+
+.mode-switcher .btn-sm i {
+    font-size: 0.9rem;
+}
+/* orders.css - добавить в конец файла */
+
+/* Переключатель режима */
+.mode-switcher {
+    display: flex;
+    align-items: center;
+    margin-right: 15px;
+}
+
+.mode-switcher .btn-sm {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    border-radius: 20px;
+}
+
+.mode-switcher .btn-sm i {
+    font-size: 0.9rem;
+    margin-right: 5px;
+}
+
+/* Панель режима */
+.mode-panel {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+}
+
+.mode-info {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.mode-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+}
+
+.mode-badge.admin-mode {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.mode-description {
+    opacity: 0.9;
+    font-size: 0.9rem;
+    color: white;
+}
+
+/* Админские фильтры */
+.admin-filters {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+}
+
+.filters-row {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-group label {
+    font-weight: 500;
+    color: var(--text-dark);
+    white-space: nowrap;
+    font-size: 0.9rem;
+}
+
+.filter-select {
+    padding: 8px 12px;
+    border: 1px solid var(--gray-light);
+    border-radius: 6px;
+    background: var(--white);
+    min-width: 150px;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.15);
+}
+
+/* Админская таблица */
+.admin-orders-table {
+    margin-top: 20px;
+}
+
+.table-container {
+    overflow-x: auto;
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.orders-table th {
+    background: var(--background-light);
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-dark);
+    border-bottom: 2px solid var(--gray-light);
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.orders-table td {
+    padding: 15px;
+    border-bottom: 1px solid var(--gray-light);
+    vertical-align: top;
+    font-size: 0.9rem;
+}
+
+.orders-table tr:hover {
+    background: var(--background-light);
+}
+
+.orders-table .small-text {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-top: 4px;
+}
+
+/* Роль пользователя */
+.user-role {
+    font-size: 0.85rem;
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-top: 3px;
+}
+
+/* Хедер с кнопками */
+.header-actions-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .mode-switcher {
+        margin-right: 10px;
+    }
+    
+    .mode-switcher .btn-sm {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .mode-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .mode-description {
+        margin-left: 0;
+    }
+    
+    .filters-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .filter-select {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .orders-table th,
+    .orders-table td {
+        padding: 10px 8px;
+        font-size: 0.85rem;
+    }
+    
+    .header-actions-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+        width: 100%;
+    }
+    
+    .header-actions-group .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .mode-panel {
+        padding: 12px 15px;
+    }
+    
+    .mode-badge {
+        font-size: 0.85rem;
+        padding: 5px 10px;
+    }
+    
+    .mode-description {
+        font-size: 0.85rem;
+    }
+}

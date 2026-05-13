@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Избранное | Морские Дары</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Шапка (такая же как в index.html) -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>Морские Дары</h1>
+                    <p>ИП Чепурнова О.И.</p>
+                </div>
+                
+                <nav class="nav">
+                    <ul class="nav-list">
+                        <li><a href="index.html#catalog">Каталог</a></li>
+                        <li><a href="index.html#about">О компании</a></li>
+                        <li><a href="index.html#delivery">Доставка</a></li>
+                        <li><a href="index.html#contacts">Контакты</a></li>
+                    </ul>
+                </nav>
+                
+                <div class="header-actions">
+                    <div class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </div>
+                    
+                    <div class="user-menu" id="user-menu">
+                        <div class="user-avatar" id="user-avatar">
+                            ОИ
+                        </div>
+                        <div class="user-dropdown" id="user-dropdown">
+                            <div class="user-info">
+                                <h4 id="user-name">Ольга Ивановна</h4>
+                                <p id="user-email">olga@example.com</p>
+                            </div>
+                            <div class="user-links">
+                                <a href="account.html"><i class="fas fa-user"></i> Личный кабинет</a>
+                                <a href="orders.html"><i class="fas fa-box"></i> Мои заказы</a>
+                                <a href="favorites.html"><i class="fas fa-heart"></i> Избранное</a>
+                                <a href="#" class="logout" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="mobile-menu-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Личный кабинет - Избранное -->
+    <section class="account-section">
+        <div class="container">
+            <div class="account-container">
+                <!-- Боковое меню -->
+                <div class="account-sidebar">
+                    <div class="account-menu">
+                        <a href="account.html" class="account-menu-item">
+                            <i class="fas fa-user"></i>
+                            <span>Мой профиль</span>
+                        </a>
+                        <a href="orders.html" class="account-menu-item">
+                            <i class="fas fa-box"></i>
+                            <span>Мои заказы</span>
+                        </a>
+                        <a href="favorites.html" class="account-menu-item active">
+                            <i class="fas fa-heart"></i>
+                            <span>Избранное</span>
+                        </a>
+                        <a href="#" class="account-menu-item">
+                            <i class="fas fa-cog"></i>
+                            <span>Настройки</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Основное содержимое -->
+                <div class="account-content">
+                    <div class="account-header">
+                        <h2>Избранное</h2>
+                        <a href="index.html#catalog" class="btn btn-primary">
+                            <i class="fas fa-fish"></i> В каталог
+                        </a>
+                    </div>
+
+                    <!-- Информация о количестве избранных товаров -->
+                    <div class="favorites-info">
+                        <div class="favorites-stats">
+                            <div class="stat-card">
+                                <i class="fas fa-heart"></i>
+                                <div>
+                                    <h3>Всего товаров</h3>
+                                    <span class="stat-number" id="total-favorites-count">0</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <i class="fas fa-percentage"></i>
+                                <div>
+                                    <h3>Со скидкой</h3>
+                                    <span class="stat-number" id="discount-favorites-count">0</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <i class="fas fa-tags"></i>
+                                <div>
+                                    <h3>Общая стоимость</h3>
+                                    <span class="stat-number" id="total-favorites-price">0</span> руб.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Фильтры избранного -->
+                    <div class="favorites-filters">
+                        <div class="filter-tabs">
+                            <button class="filter-tab active" data-filter="all">Все товары</button>
+                            <button class="filter-tab" data-filter="available">В наличии</button>
+                            <button class="filter-tab" data-filter="discount">Со скидкой</button>
+                            <button class="filter-tab" data-filter="fresh">Свежая рыба</button>
+                            <button class="filter-tab" data-filter="seafood">Морепродукты</button>
+                        </div>
+                        <div class="sort-section">
+                            <label for="favorites-sort">Сортировать:</label>
+                            <select id="favorites-sort">
+                                <option value="date">По дате добавления</option>
+                                <option value="price-asc">По цене (сначала дешевые)</option>
+                                <option value="price-desc">По цене (сначала дорогие)</option>
+                                <option value="name">По названию</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Контейнер для избранных товаров -->
+                    <div class="favorites-container" id="favoritesContainer">
+                        <!-- Избранные товары будут загружены через JavaScript -->
+                    </div>
+
+                    <!-- Кнопка очистки -->
+                    <div class="favorites-actions" style="text-align: center; margin-top: 30px;">
+                        <button class="btn btn-secondary" id="clearFavoritesBtn">
+                            <i class="fas fa-trash-alt"></i> Очистить все избранное
+                        </button>
+                    </div>
+
+                    <!-- Пустое состояние -->
+                    <div class="empty-state" id="emptyFavoritesState" style="display: none;">
+                        <div class="empty-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h3>В избранном пока нет товаров</h3>
+                        <p>Добавляйте понравившиеся рыбные продукты в избранное, чтобы быстро заказать их в следующий раз.</p>
+                        <a href="index.html#catalog" class="btn btn-primary">
+                            <i class="fas fa-shopping-cart"></i> Перейти в каталог
+                        </a>
+                    </div>
+
+                    <!-- Популярные категории -->
+                    <div class="popular-categories" style="margin-top: 40px;">
+                        <h3 class="section-title" style="font-size: 1.5rem; margin-bottom: 20px;">
+                            <i class="fas fa-fire"></i> Популярные категории
+                        </h3>
+                        <div class="categories-grid">
+                            <div class="category-card" data-category="fresh">
+                                <div class="category-icon">🐟</div>
+                                <div class="category-name">Свежая рыба</div>
+                                <div class="category-count">24 товара</div>
+                            </div>
+                            
+                            <div class="category-card" data-category="seafood">
+                                <div class="category-icon">🦐</div>
+                                <div class="category-name">Морепродукты</div>
+                                <div class="category-count">18 товаров</div>
+                            </div>
+                            
+                            <div class="category-card" data-category="caviar">
+                                <div class="category-icon">🥫</div>
+                                <div class="category-name">Икра</div>
+                                <div class="category-count">8 товаров</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Футер (такой же как в index.html) -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Морские Дары</h3>
+                    <p>ИП Чепурнова Ольга Ивановна</p>
+                    <p>Продажа и доставка охлажденной и замороженной рыбы и морепродуктов</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Каталог</h4>
+                    <ul>
+                        <li><a href="index.html#catalog">Охлажденная рыба</a></li>
+                        <li><a href="index.html#catalog">Замороженная рыба</a></li>
+                        <li><a href="index.html#catalog">Морепродукты</a></li>
+                        <li><a href="index.html#catalog">Филе и стейки</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Информация</h4>
+                    <ul>
+                        <li><a href="index.html#about">О компании</a></li>
+                        <li><a href="index.html#delivery">Доставка и оплата</a></li>
+                        <li><a href="index.html#contacts">Контакты</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Свяжитесь с нами</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-vk"></i></a>
+                        <a href="#"><i class="fab fa-telegram"></i></a>
+                        <a href="#"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 ИП Чепурнова О.И. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="favorites.js"></script>
+</body>
+</html>

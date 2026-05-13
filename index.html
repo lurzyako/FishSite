@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рыба и морепродукты | ИП Чепурнова О.И.</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Шапка сайта -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>Морские Дары</h1>
+                    <p>ИП Чепурнова О.И.</p>
+                </div>
+                
+                <nav class="nav">
+                    <ul class="nav-list">
+                        <li><a href="#catalog">Каталог</a></li>
+                        <li><a href="#about">О компании</a></li>
+                        <li><a href="#delivery">Доставка</a></li>
+                        <li><a href="#contacts">Контакты</a></li>
+                    </ul>
+                </nav>
+                
+                <div class="header-actions">
+                    <!-- ИКОНКА КОРЗИНЫ - ИСПРАВЛЕНО: изменено с <a> на <div> для модального окна -->
+                    <div class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </div>
+                    
+                    <!-- Кнопка входа (видна когда пользователь не авторизован) -->
+                    <button class="btn btn-outline login-btn" id="login-btn">Войти</button>
+                    
+                    <!-- Меню пользователя (видно когда пользователь авторизован) -->
+                    <div class="user-menu" id="user-menu" style="display: none;">
+                        <div class="user-avatar" id="user-avatar">
+                            ОИ
+                        </div>
+                        <div class="user-dropdown" id="user-dropdown">
+                            <div class="user-info">
+                                <h4 id="user-name">Ольга Ивановна</h4>
+                                <p id="user-email">olga@example.com</p>
+                            </div>
+                            <div class="user-links">
+                                <a href="account.html"><i class="fas fa-user"></i> Личный кабинет</a>
+                                <a href="orders.html"><i class="fas fa-box"></i> Мои заказы</a>
+                                <a href="favorites.html"><i class="fas fa-heart"></i> Избранное <span class="favorites-count">(0)</span></a>
+                                <a href="#" class="logout" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="mobile-menu-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Главный баннер -->
+    <section class="hero">
+        <!-- Вращающиеся волны -->
+        <div class="waves-rotating">
+            <div class="wave-rotating -one"></div>
+            <div class="wave-rotating -two"></div>
+            <div class="wave-rotating -three"></div>
+        </div>
+        
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h2>Свежая рыба и морепродукты с доставкой</h2>
+                    <p>Широкий ассортимент охлажденной и замороженной рыбной продукции от проверенных поставщиков. Качество, которое вы можете почувствовать!</p>
+                    <div class="hero-actions">
+                        <a href="#catalog" class="btn btn-primary">Перейти в каталог</a>
+                        <a href="#delivery" class="btn btn-secondary">Условия доставки</a>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <div class="fish-bowl" id="fishBowl">
+                        <div class="bowl"></div>
+                        <div class="water">
+                            <div class="fish-body">
+                                <div class="fish-eye"></div>
+                                <div class="fin-center"></div>
+                                <div class="fin top"></div>
+                                <div class="fin bottom"></div>
+                                <div class="tail"></div>
+                            </div>
+                        </div>
+                        <div class="fish-bubble bubble-1"></div>
+                        <div class="fish-bubble bubble-2"></div>
+                        <div class="fish-bubble bubble-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Преимущества -->
+    <section class="advantages">
+        <div class="container">
+            <h2 class="section-title">Наши преимущества</h2>
+            <div class="advantages-grid">
+                <div class="advantage-card">
+                    <div class="advantage-icon">
+                        <i class="fas fa-temperature-low"></i>
+                    </div>
+                    <h3>Строгий контроль температуры</h3>
+                    <p>Соблюдение оптимальных условий хранения и доставки для сохранения свежести продукции</p>
+                </div>
+                <div class="advantage-card">
+                    <div class="advantage-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3>Проверенные поставщики</h3>
+                    <p>Работаем только с надежными партнерами, гарантирующими качество продукции</p>
+                </div>
+                <div class="advantage-card">
+                    <div class="advantage-icon">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <h3>Индивидуальный подход</h3>
+                    <p>Учитываем пожелания каждого клиента и предлагаем персонализированный сервис</p>
+                </div>
+                <div class="advantage-card">
+                    <div class="advantage-icon">
+                        <i class="fas fa-shipping-fast"></i>
+                    </div>
+                    <h3>Быстрая доставка</h3>
+                    <p>Доставляем заказы в удобное для вас время с соблюдением всех температурных норм</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Каталог товаров -->
+    <section id="catalog" class="catalog">
+        <div class="container">
+            <h2 class="section-title">Каталог продукции</h2>
+            
+            <!-- Фильтры и сортировка -->
+            <div class="catalog-controls">
+                <div class="filter-section">
+                    <h3>Категории</h3>
+                    <div class="category-filters">
+                        <button class="filter-btn active" data-category="all">Все товары</button>
+                        <button class="filter-btn" data-category="fresh">Охлажденная рыба</button>
+                        <button class="filter-btn" data-category="frozen">Замороженная рыба</button>
+                        <button class="filter-btn" data-category="seafood">Морепродукты</button>
+                        <button class="filter-btn" data-category="fillets">Филе и стейки</button>
+                    </div>
+                </div>
+                
+                <div class="sort-section">
+                    <label for="sort">Сортировать по:</label>
+                    <select id="sort">
+                        <option value="popular">Популярности</option>
+                        <option value="price-asc">Цене (по возрастанию)</option>
+                        <option value="price-desc">Цене (по убыванию)</option>
+                        <option value="name">Названию</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Сетка товаров -->
+            <div class="products-grid">
+                <!-- Товары будут добавляться динамически через JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- О компании -->
+    <section id="about" class="about">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2 class="section-title">О нашей компании</h2>
+                    <p>ИП Чепурнова Ольга Ивановна специализируется на продаже и доставке охлажденной и замороженной рыбы и морепродуктов. Мы тщательно отбираем поставщиков, чтобы гарантировать нашим клиентам только качественную продукцию.</p>
+                    <p>Нашими клиентами являются как частные лица, заказывающие продукцию для личного потребления, так и небольшие предприятия общественного питания. Мы ценим каждого клиента и стремимся предложить индивидуальный подход и высокий уровень сервиса.</p>
+                    <div class="about-stats">
+                        <div class="stat">
+                            <span class="stat-number">50+</span>
+                            <span class="stat-label">Видов продукции</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">1000+</span>
+                            <span class="stat-label">Довольных клиентов</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">3</span>
+                            <span class="stat-label">Года на рынке</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-image">
+                    <div class="image-placeholder">
+                        <i class="fas fa-store"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Доставка -->
+    <section id="delivery" class="delivery">
+        <div class="container">
+            <h2 class="section-title">Условия доставки</h2>
+            <div class="delivery-content">
+                <div class="delivery-info">
+                    <div class="delivery-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>Оформление заказа</h3>
+                            <p>Выберите товары в каталоге, добавьте их в корзину и оформите заказ через сайт или по телефону.</p>
+                        </div>
+                    </div>
+                    <div class="delivery-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>Подтверждение</h3>
+                            <p>Наш менеджер свяжется с вами для подтверждения заказа и уточнения деталей доставки.</p>
+                        </div>
+                    </div>
+                    <div class="delivery-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>Доставка</h3>
+                            <p>Курьер доставит ваш заказ по указанному адресу в согласованное время с соблюдением температурного режима.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="delivery-form">
+                    <h3>Рассчитать стоимость доставки</h3>
+                    <form id="delivery-calculator">
+                        <div class="form-group">
+                            <label for="address">Адрес доставки</label>
+                            <input type="text" id="address" placeholder="Введите ваш адрес">
+                        </div>
+                        <div class="form-group">
+                            <label for="delivery-time">Желаемое время доставки</label>
+                            <select id="delivery-time">
+                                <option value="9-12">9:00 - 12:00</option>
+                                <option value="12-15">12:00 - 15:00</option>
+                                <option value="15-18">15:00 - 18:00</option>
+                                <option value="18-21">18:00 - 21:00</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Рассчитать</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Контакты -->
+    <section id="contacts" class="contacts">
+        <div class="container">
+            <h2 class="section-title">Контакты</h2>
+            <div class="contacts-content">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Телефон</h3>
+                            <p>+7 (XXX) XXX-XX-XX</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Email</h3>
+                            <p>info@example.com</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Время работы</h3>
+                            <p>Пн-Пт: 9:00 - 18:00</p>
+                            <p>Сб-Вс: 10:00 - 16:00</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Адрес</h3>
+                            <p>г. Екатеринбург, ул. Репина, д. 15</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-form">
+                    <h3>Остались вопросы?</h3>
+                    <form id="contact-form">
+                        <div class="form-group">
+                            <label for="name">Ваше имя</label>
+                            <input type="text" id="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Сообщение</label>
+                            <textarea id="message" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Отправить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Карта с анимированным подводным фоном -->
+    <section class="map-section">
+        <!-- Анимированные рыбы на заднем фоне -->
+        <div class="under-sea-background">
+            <div class="camera -x">
+                <div class="camera -y">
+                    <div class="camera -z">
+                        <div class="blowing-bubbles">
+                            <!-- 40 пузырьков будут сгенерированы через JavaScript -->
+                        </div>
+                        <div class="swiming-fishes">
+                            <!-- 10 рыб будут сгенерированы через JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="container">
+            <h2 class="section-title">Как нас найти</h2>
+            <div id="map"></div>
+        </div>
+    </section>
+
+    <!-- Футер -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Морские Дары</h3>
+                    <p>ИП Чепурнова Ольга Ивановна</p>
+                    <p>Продажа и доставка охлажденной и замороженной рыбы и морепродуктов</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Каталог</h4>
+                    <ul>
+                        <li><a href="#catalog">Охлажденная рыба</a></li>
+                        <li><a href="#catalog">Замороженная рыба</a></li>
+                        <li><a href="#catalog">Морепродукты</a></li>
+                        <li><a href="#catalog">Филе и стейки</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Покупателям</h4>
+                    <ul>
+                        <li><a href="account.html">Личный кабинет</a></li>
+                        <li><a href="orders.html">Мои заказы</a></li>
+                        <li><a href="favorites.html">Избранное</a></li>
+                        <li><a href="#delivery">Доставка и оплата</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Свяжитесь с нами</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-vk"></i></a>
+                        <a href="#"><i class="fab fa-telegram"></i></a>
+                        <a href="#"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 ИП Чепурнова О.И. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Модальное окно корзины -->
+    <div class="modal" id="cart-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Корзина</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="cart-items">
+                    <!-- Товары в корзине будут добавляться динамически -->
+                </div>
+                <div class="cart-total">
+                    <p>Итого: <span class="total-price">0</span> руб.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline close-cart">Продолжить покупки</button>
+                <button class="btn btn-primary checkout-btn">Оформить заказ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно авторизации -->
+    <div class="modal" id="auth-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Вход в личный кабинет</h2>
+                <button class="close-modal auth-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="auth-form">
+                    <div class="form-group">
+                        <label for="auth-email">Email</label>
+                        <input type="email" id="auth-email" placeholder="Введите ваш email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="auth-password">Пароль</label>
+                        <input type="password" id="auth-password" placeholder="Введите ваш пароль" required>
+                        <div class="password-toggle">
+                            <button type="button" class="toggle-password" id="toggle-password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group remember-me">
+                        <input type="checkbox" id="remember-me">
+                        <label for="remember-me">Запомнить меня</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Войти</button>
+                    
+                    <div class="auth-divider">
+                        <span>или</span>
+                    </div>
+                    
+                    <div class="social-auth">
+                        <button type="button" class="btn btn-outline btn-social">
+                            <i class="fab fa-google"></i> Войти через Google
+                        </button>
+                        <button type="button" class="btn btn-outline btn-social">
+                            <i class="fab fa-vk"></i> Войти через VK
+                        </button>
+                    </div>
+                    
+                    <div class="auth-links">
+                        <a href="#" class="forgot-password">Забыли пароль?</a>
+                        <a href="#" class="register-link">Зарегистрироваться</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно оформления заказа -->
+    <div class="modal" id="checkout-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Оформление заказа</h2>
+                <button class="close-modal" id="close-checkout">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="checkout-form">
+                    <div class="form-group">
+                        <label for="checkout-name">ФИО *</label>
+                        <input type="text" id="checkout-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="checkout-phone">Телефон *</label>
+                        <input type="tel" id="checkout-phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="checkout-email">Email *</label>
+                        <input type="email" id="checkout-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="checkout-address">Адрес доставки *</label>
+                        <textarea id="checkout-address" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="checkout-comment">Комментарий к заказу</label>
+                        <textarea id="checkout-comment" rows="3" placeholder="Пожелания по доставке, особые условия и т.д."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="checkout-payment">Способ оплаты</label>
+                        <select id="checkout-payment">
+                            <option value="cash">Наличными при получении</option>
+                            <option value="card">Картой при получении</option>
+                            <option value="online">Онлайн оплата</option>
+                        </select>
+                    </div>
+                    <div class="order-summary">
+                        <h4>Сумма заказа:</h4>
+                        <div class="summary-total">
+                            <span>Итого:</span>
+                            <span class="checkout-total">0 руб.</span>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Подтвердить заказ</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Яндекс Карты -->
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
+    <script src="script.js"></script>
+</body>
+</html>

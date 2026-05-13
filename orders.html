@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои заказы | Морские Дары</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="orders.css">
+</head>
+<body>
+    <!-- Шапка -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>Морские Дары</h1>
+                    <p>ИП Чепурнова О.И.</p>
+                </div>
+                
+                <nav class="nav">
+                    <ul class="nav-list">
+                        <li><a href="index.html#catalog">Каталог</a></li>
+                        <li><a href="index.html#about">О компании</a></li>
+                        <li><a href="index.html#delivery">Доставка</a></li>
+                        <li><a href="index.html#contacts">Контакты</a></li>
+                    </ul>
+                </nav>
+                
+                <div class="header-actions">
+                    <div class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </div>
+                    
+                    <!-- Переключатель режима -->
+                    <div class="mode-switcher" id="modeSwitcher">
+                        <button class="btn btn-outline btn-sm" id="toggleModeBtn">
+                            <i class="fas fa-user-shield"></i> Админский режим
+                        </button>
+                    </div>
+                    
+                    <div class="user-menu" id="user-menu">
+                        <div class="user-avatar" id="user-avatar">
+                            ОИ
+                        </div>
+                        <div class="user-dropdown" id="user-dropdown">
+                            <div class="user-info">
+                                <h4 id="user-name">Ольга Ивановна</h4>
+                                <p id="user-email">olga@example.com</p>
+                                <p class="user-role" id="user-role">Клиент</p>
+                            </div>
+                            <div class="user-links">
+                                <a href="account.html"><i class="fas fa-user"></i> Личный кабинет</a>
+                                <a href="orders.html"><i class="fas fa-box"></i> Мои заказы</a>
+                                <a href="favorites.html"><i class="fas fa-heart"></i> Избранное</a>
+                                <a href="#" class="logout" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="mobile-menu-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Личный кабинет - Заказы -->
+    <section class="account-section">
+        <div class="container">
+            <div class="account-container">
+                <!-- Боковое меню -->
+                <div class="account-sidebar">
+                    <div class="account-menu">
+                        <a href="account.html" class="account-menu-item">
+                            <i class="fas fa-user"></i>
+                            <span>Мой профиль</span>
+                        </a>
+                        <a href="orders.html" class="account-menu-item active">
+                            <i class="fas fa-box"></i>
+                            <span>Мои заказы</span>
+                        </a>
+                        <a href="favorites.html" class="account-menu-item">
+                            <i class="fas fa-heart"></i>
+                            <span>Избранное</span>
+                        </a>
+                        <a href="#" class="account-menu-item">
+                            <i class="fas fa-cog"></i>
+                            <span>Настройки</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Основное содержимое -->
+                <div class="account-content">
+                    <div class="account-header">
+                        <h2>Мои заказы</h2>
+                        <div class="header-actions-group">
+                            <a href="index.html#catalog" class="btn btn-primary">
+                                <i class="fas fa-shopping-cart"></i> Сделать новый заказ
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Панель режима -->
+                    <div class="mode-panel" id="modePanel">
+                        <div class="mode-info">
+                            <span class="mode-badge admin-mode">
+                                <i class="fas fa-user-shield"></i> Админский режим
+                            </span>
+                            <span class="mode-description">
+                                Вы просматриваете все заказы клиентов
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Фильтры заказов (общие) -->
+                    <div class="order-filters">
+                        <div class="filter-tabs">
+                            <button class="filter-tab active" data-filter="all">Все заказы</button>
+                            <button class="filter-tab" data-filter="new">Новые</button>
+                            <button class="filter-tab" data-filter="processing">В обработке</button>
+                            <button class="filter-tab" data-filter="delivered">Доставленные</button>
+                            <button class="filter-tab" data-filter="cancelled">Отмененные</button>
+                        </div>
+                        <div class="search-box">
+                            <input type="text" id="orderSearch" placeholder="Поиск по ID или товару...">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </div>
+
+                    <!-- Админские фильтры -->
+                    <div class="admin-filters" id="adminFilters">
+                        <div class="filters-row">
+                            <div class="filter-group">
+                                <label for="adminClientFilter"><i class="fas fa-user"></i> Клиент:</label>
+                                <select id="adminClientFilter" class="filter-select">
+                                    <option value="all">Все клиенты</option>
+                                    <option value="client1">Иван Иванов</option>
+                                    <option value="client2">Ольга Петрова</option>
+                                    <option value="client3">Алексей Смирнов</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label for="adminDateFilter"><i class="fas fa-calendar"></i> Период:</label>
+                                <select id="adminDateFilter" class="filter-select">
+                                    <option value="all">За все время</option>
+                                    <option value="today">Сегодня</option>
+                                    <option value="week">Эта неделя</option>
+                                    <option value="month">Этот месяц</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label for="adminAmountFilter"><i class="fas fa-ruble-sign"></i> Сумма:</label>
+                                <select id="adminAmountFilter" class="filter-select">
+                                    <option value="all">Любая сумма</option>
+                                    <option value="0-5000">до 5 000 руб.</option>
+                                    <option value="5000-10000">5 000 - 10 000 руб.</option>
+                                    <option value="10000+">более 10 000 руб.</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Контейнер для клиентских заказов -->
+                    <div class="orders-list" id="ordersContainer">
+                        <!-- Клиентские заказы будут загружены через JavaScript -->
+                    </div>
+
+                    <!-- Админская таблица заказов -->
+                    <div class="admin-orders-table" id="adminOrdersTable">
+                        <div class="table-container">
+                            <table class="orders-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID заказа</th>
+                                        <th>Дата</th>
+                                        <th>Клиент</th>
+                                        <th>Телефон</th>
+                                        <th>Сумма</th>
+                                        <th>Статус</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminOrdersTableBody">
+                                    <!-- Админские заказы будут загружены через JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Пагинация -->
+                    <div class="pagination">
+                        <button class="pagination-btn" id="prevPage" disabled>
+                            <i class="fas fa-chevron-left"></i> Назад
+                        </button>
+                        <div class="page-numbers" id="pageNumbers"></div>
+                        <button class="pagination-btn" id="nextPage">
+                            Вперед <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Информация о заказах -->
+                    <div class="order-stats">
+                        <div class="stat-card">
+                            <i class="fas fa-box-open"></i>
+                            <div>
+                                <h3>Всего заказов</h3>
+                                <span class="stat-number" id="totalOrders">12</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <h3>Выполнено</h3>
+                                <span class="stat-number" id="completedOrders">8</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <h3>В процессе</h3>
+                                <span class="stat-number" id="activeOrders">3</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <div>
+                                <h3>Всего потрачено</h3>
+                                <span class="stat-number" id="totalSpent">28 500</span> руб.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Футер -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Морские Дары</h3>
+                    <p>ИП Чепурнова Ольга Ивановна</p>
+                    <p>Продажа и доставка охлажденной и замороженной рыбы и морепродуктов</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Каталог</h4>
+                    <ul>
+                        <li><a href="index.html#catalog">Охлажденная рыба</a></li>
+                        <li><a href="index.html#catalog">Замороженная рыба</a></li>
+                        <li><a href="index.html#catalog">Морепродукты</a></li>
+                        <li><a href="index.html#catalog">Филе и стейки</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Информация</h4>
+                    <ul>
+                        <li><a href="index.html#about">О компании</a></li>
+                        <li><a href="index.html#delivery">Доставка и оплата</a></li>
+                        <li><a href="index.html#contacts">Контакты</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Свяжитесь с нами</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-vk"></i></a>
+                        <a href="#"><i class="fab fa-telegram"></i></a>
+                        <a href="#"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 ИП Чепурнова О.И. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Модальное окно деталей заказа -->
+    <div class="modal" id="orderDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Детали заказа</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body" id="orderDetailsContent">
+                <!-- Контент будет загружен через JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline close-modal">Закрыть</button>
+                <button class="btn btn-primary" id="repeatOrderBtn">Повторить заказ</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="orders.js"></script>
+</body>
+</html>
