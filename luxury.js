@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.add('luxury-ready');
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const hasFinePointer = window.matchMedia('(pointer: fine)').matches;
     const header = document.querySelector('.header');
     const hero = document.querySelector('.hero');
     let lastScrollY = window.scrollY;
@@ -194,6 +195,55 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll(tiltSelector).forEach(bindTiltCard);
     }
 
+    function resetFishParallax(stage) {
+        stage.style.setProperty('--fish-shift-x', '0px');
+        stage.style.setProperty('--fish-shift-y', '0px');
+        stage.style.setProperty('--fish-rotate-x', '0deg');
+        stage.style.setProperty('--fish-rotate-y', '0deg');
+        stage.style.setProperty('--fish-glare-x', '50%');
+        stage.style.setProperty('--fish-glare-y', '42%');
+        stage.style.setProperty('--fish-shadow-x', '50%');
+        stage.style.setProperty('--fish-shadow-y', '79%');
+        stage.style.setProperty('--fish-shadow-scale-x', '1');
+        stage.style.setProperty('--fish-shadow-scale-y', '1');
+        stage.style.setProperty('--fish-shadow-opacity', '0.34');
+    }
+
+    function bindFishParallax(stage) {
+        if (prefersReducedMotion || !hasFinePointer || stage.dataset.fishParallaxBound === 'true') return;
+        stage.dataset.fishParallaxBound = 'true';
+
+        stage.addEventListener('pointermove', (event) => {
+            const rect = stage.getBoundingClientRect();
+            if (!rect.width || !rect.height) return;
+
+            const x = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
+            const y = Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height));
+            const offsetX = (x - 0.5) * 2;
+            const offsetY = (y - 0.5) * 2;
+            const depth = Math.min(1, Math.hypot(offsetX, offsetY));
+
+            stage.style.setProperty('--fish-shift-x', `${(offsetX * 18).toFixed(2)}px`);
+            stage.style.setProperty('--fish-shift-y', `${(offsetY * 14).toFixed(2)}px`);
+            stage.style.setProperty('--fish-rotate-x', `${(-offsetY * 6.5).toFixed(2)}deg`);
+            stage.style.setProperty('--fish-rotate-y', `${(offsetX * 9).toFixed(2)}deg`);
+            stage.style.setProperty('--fish-glare-x', `${(x * 100).toFixed(1)}%`);
+            stage.style.setProperty('--fish-glare-y', `${(y * 100).toFixed(1)}%`);
+            stage.style.setProperty('--fish-shadow-x', `${(50 + offsetX * 5).toFixed(2)}%`);
+            stage.style.setProperty('--fish-shadow-y', `${(79 + offsetY * 2.2).toFixed(2)}%`);
+            stage.style.setProperty('--fish-shadow-scale-x', `${(1.04 + depth * 0.16).toFixed(3)}`);
+            stage.style.setProperty('--fish-shadow-scale-y', `${(0.9 + Math.abs(offsetX) * 0.08 + Math.max(0, offsetY) * 0.05).toFixed(3)}`);
+            stage.style.setProperty('--fish-shadow-opacity', `${(0.28 + depth * 0.08).toFixed(3)}`);
+        }, { passive: true });
+
+        stage.addEventListener('pointerleave', () => resetFishParallax(stage));
+        stage.addEventListener('pointercancel', () => resetFishParallax(stage));
+    }
+
+    function setupFishParallax() {
+        document.querySelectorAll('.advantages-editorial-media').forEach(bindFishParallax);
+    }
+
     function bindMagneticButton(button) {
         if (prefersReducedMotion || button.dataset.luxuryMagneticBound === 'true') return;
         button.dataset.luxuryMagneticBound = 'true';
@@ -262,6 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setupReveal();
     setupTilt();
+    setupFishParallax();
     setupMagneticButtons();
     setupConceptScroll();
     updateHeader();
@@ -271,6 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mutationObserver = new MutationObserver(() => {
         setupReveal();
         setupTilt();
+        setupFishParallax();
         setupMagneticButtons();
     });
 
