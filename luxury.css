@@ -1821,53 +1821,84 @@ body .mode-switcher .btn-sm:hover {
 
 .advantages-editorial {
     display: grid;
-    grid-template-columns: minmax(420px, 0.98fr) minmax(0, 0.82fr);
+    grid-template-columns: minmax(390px, 0.92fr) minmax(0, 0.86fr);
     gap: clamp(42px, 7vw, 96px);
-    align-items: start;
+    align-items: stretch;
+    min-height: clamp(680px, 82vh, 860px);
 }
 
 .advantages-editorial-media {
     position: sticky;
     top: 112px;
-    min-height: min(760px, calc(100vh - 150px));
+    display: grid;
+    place-items: center;
+    min-height: inherit;
     margin: 0;
+    padding: clamp(22px, 3.6vw, 48px);
     border: 1px solid rgba(255, 255, 255, 0.74);
     border-radius: 42px;
     background:
-        linear-gradient(145deg, rgba(255, 255, 255, 0.64), rgba(225, 244, 255, 0.34));
+        radial-gradient(circle at 52% 42%, rgba(255, 255, 255, 0.94) 0%, rgba(184, 229, 250, 0.52) 31%, transparent 62%),
+        linear-gradient(145deg, rgba(247, 252, 255, 0.88) 0%, rgba(182, 218, 241, 0.76) 54%, rgba(229, 247, 255, 0.72) 100%);
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.9),
         0 36px 100px rgba(36, 91, 151, 0.16);
     overflow: hidden;
+    isolation: isolate;
     transform: perspective(1100px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
     transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+
+.advantages-editorial-media::before {
+    content: '';
+    position: absolute;
+    inset: 8% 10%;
+    z-index: 0;
+    border-radius: 999px;
+    background:
+        radial-gradient(circle at 48% 44%, rgba(0, 113, 227, 0.3), transparent 38%),
+        radial-gradient(circle at 50% 68%, rgba(90, 200, 250, 0.24), transparent 46%);
+    filter: blur(12px);
+    pointer-events: none;
 }
 
 .advantages-editorial-media::after {
     content: '';
     position: absolute;
-    inset: 0;
+    right: 12%;
+    bottom: 8%;
+    left: 12%;
+    z-index: 0;
+    height: 36%;
+    border-radius: 999px;
     background:
-        linear-gradient(180deg, rgba(6, 20, 42, 0.02) 34%, rgba(6, 20, 42, 0.54) 100%),
-        radial-gradient(circle at 82% 16%, rgba(90, 200, 250, 0.26), transparent 20rem);
+        radial-gradient(ellipse at center, rgba(0, 58, 112, 0.18), transparent 68%);
+    filter: blur(18px);
     pointer-events: none;
 }
 
 .advantages-editorial-media img {
     display: block;
-    width: 100%;
-    height: 100%;
-    min-height: inherit;
-    object-fit: cover;
-    object-position: center 46%;
-    transform: scale(1.03);
-    animation: advantageEditorialDrift 14s ease-in-out infinite alternate;
+    position: relative;
+    z-index: 1;
+    width: auto;
+    height: 103%;
+    max-width: none;
+    object-fit: contain;
+    object-position: center;
+    filter:
+        drop-shadow(0 30px 46px rgba(8, 59, 112, 0.2))
+        drop-shadow(0 4px 14px rgba(255, 255, 255, 0.58))
+        contrast(1.06)
+        saturate(1.08);
+    animation: advantageEditorialDrift 13s ease-in-out infinite alternate;
 }
 
 .advantages-editorial-media figcaption {
     position: absolute;
     left: 28px;
-    bottom: 28px;
+    top: 28px;
+    bottom: auto;
     z-index: 2;
     display: grid;
     gap: 4px;
@@ -2002,10 +2033,10 @@ body .mode-switcher .btn-sm:hover {
 
 @keyframes advantageEditorialDrift {
     from {
-        transform: scale(1.03) translate3d(-1%, -0.8%, 0);
+        transform: translate3d(-1%, -1.8%, 0) scale(1);
     }
     to {
-        transform: scale(1.08) translate3d(1.2%, 1%, 0);
+        transform: translate3d(1%, 1.4%, 0) scale(1.025);
     }
 }
 
@@ -3125,12 +3156,17 @@ body .mode-description {
     .advantages-editorial {
         grid-template-columns: 1fr;
         gap: 38px;
+        min-height: auto;
     }
 
     .advantages-editorial-media {
         position: relative;
         top: auto;
         min-height: 520px;
+    }
+
+    .advantages-editorial-media img {
+        height: 106%;
     }
 
     .advantages-editorial-content {
@@ -3289,7 +3325,8 @@ body .mode-description {
 
     .advantages-editorial-media figcaption {
         left: 22px;
-        bottom: 22px;
+        top: 22px;
+        bottom: auto;
     }
 
     .advantage-row {
@@ -3927,7 +3964,8 @@ section,
 
     .advantages-editorial-media figcaption {
         left: 18px;
-        bottom: 18px;
+        top: 18px;
+        bottom: auto;
         min-width: 160px;
         padding: 14px 16px;
         border-radius: 20px;
