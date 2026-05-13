@@ -517,9 +517,10 @@ function createFeaturedProductCard(product) {
     const card = document.createElement('article');
     card.className = 'featured-product-card';
     card.dataset.id = product.id;
+    card.dataset.category = product.category;
     card.innerHTML = `
-        <div class="featured-product-visual">
-            <span>${product.image}</span>
+        <div class="featured-product-visual featured-product-visual-${product.category}">
+            <span class="featured-product-icon" aria-hidden="true">${product.image}</span>
             <button class="favorite-btn ${favorites.includes(product.id) ? 'active' : ''}" data-id="${product.id}" aria-label="Добавить в избранное">
                 <i class="fas fa-heart"></i>
             </button>

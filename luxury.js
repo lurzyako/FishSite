@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
         '.advantages-stage',
         '.advantages-editorial-media',
         '.featured-showcase',
-        '.featured-product-card',
         '.proof-card',
         '.footer-cta'
     ].join(',');
