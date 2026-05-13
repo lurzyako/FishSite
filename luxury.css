@@ -1953,3 +1953,371 @@ body .mode-description {
         right: 18px;
     }
 }
+
+.featured-showcase {
+    position: relative;
+    margin: -10px 0 34px;
+    padding: clamp(22px, 3vw, 34px);
+    border: 1px solid rgba(255, 255, 255, 0.74);
+    border-radius: 34px;
+    background:
+        radial-gradient(circle at 10% 0%, rgba(0, 113, 227, 0.14), transparent 22rem),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.76), rgba(232, 247, 255, 0.48));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        0 28px 90px rgba(36, 91, 151, 0.14);
+    backdrop-filter: saturate(180%) blur(28px);
+    -webkit-backdrop-filter: saturate(180%) blur(28px);
+    overflow: hidden;
+}
+
+.featured-showcase::before {
+    content: '';
+    position: absolute;
+    inset: -20% 54% auto -12%;
+    height: 260px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(90, 200, 250, 0.28), transparent 68%);
+    pointer-events: none;
+}
+
+.featured-showcase-header {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(150px, 0.3fr) minmax(0, 1fr);
+    gap: 22px;
+    align-items: end;
+    margin-bottom: 24px;
+}
+
+.featured-kicker {
+    color: var(--primary-color);
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.featured-showcase h3 {
+    margin: 0 0 8px;
+    color: var(--text-dark);
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    line-height: 0.98;
+}
+
+.featured-showcase p {
+    max-width: 620px;
+    margin: 0;
+    color: rgba(16, 24, 32, 0.64);
+}
+
+.featured-carousel {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr) 52px;
+    gap: 14px;
+    align-items: center;
+}
+
+.featured-carousel-window {
+    overflow: hidden;
+    border-radius: 28px;
+}
+
+.featured-carousel-track {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(250px, 32%);
+    gap: 18px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    padding: 4px;
+}
+
+.featured-carousel-track::-webkit-scrollbar {
+    display: none;
+}
+
+.featured-product-card {
+    scroll-snap-align: start;
+    min-height: 100%;
+}
+
+.featured-product-card .product-image {
+    min-height: 190px;
+}
+
+.featured-product-card .product-title {
+    min-height: 58px;
+}
+
+.carousel-btn {
+    width: 52px;
+    height: 52px;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: 50%;
+    color: var(--primary-dark);
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.76), rgba(232, 247, 255, 0.44));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.86),
+        0 14px 34px rgba(0, 113, 227, 0.13);
+    cursor: pointer;
+    transition: transform var(--transition), opacity var(--transition), background var(--transition);
+    backdrop-filter: saturate(180%) blur(18px);
+    -webkit-backdrop-filter: saturate(180%) blur(18px);
+}
+
+.carousel-btn:hover:not(:disabled) {
+    color: #fff;
+    background: linear-gradient(135deg, #0071e3, #00a3ff);
+    transform: translateY(-2px) scale(1.04);
+}
+
+.carousel-btn:disabled {
+    opacity: 0.42;
+    cursor: default;
+}
+
+.featured-carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 9px;
+    margin-top: 20px;
+}
+
+.featured-carousel-dot {
+    width: 8px;
+    height: 8px;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(0, 113, 227, 0.22);
+    cursor: pointer;
+    transition: width var(--transition), background var(--transition);
+}
+
+.featured-carousel-dot.active {
+    width: 28px;
+    background: linear-gradient(90deg, #0071e3, #5ac8fa);
+}
+
+.journey-guide {
+    position: fixed;
+    right: 18px;
+    top: 50%;
+    z-index: 1500;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 3px;
+    gap: 12px;
+    width: 178px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.62);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.86),
+        0 22px 70px rgba(36, 91, 151, 0.16);
+    transform: translateY(-50%);
+    backdrop-filter: saturate(180%) blur(26px);
+    -webkit-backdrop-filter: saturate(180%) blur(26px);
+}
+
+.journey-run {
+    grid-column: 1 / -1;
+    min-height: 38px;
+    border: 1px solid rgba(255, 255, 255, 0.74);
+    border-radius: 999px;
+    color: #fff;
+    background: linear-gradient(135deg, #0071e3, #00a3ff);
+    box-shadow: 0 14px 32px rgba(0, 113, 227, 0.22);
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.journey-guide.is-running .journey-run {
+    background: linear-gradient(135deg, #0f2742, #0071e3);
+}
+
+.journey-progress {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: stretch;
+    width: 3px;
+    min-height: 190px;
+    border-radius: 999px;
+    background: rgba(0, 113, 227, 0.12);
+    overflow: hidden;
+}
+
+.journey-progress span {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(180deg, #0071e3, #5ac8fa);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 180ms linear;
+}
+
+.journey-steps {
+    grid-column: 1;
+    grid-row: 2;
+    display: grid;
+    gap: 6px;
+}
+
+.journey-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    border: 0;
+    border-radius: 14px;
+    padding: 8px 9px;
+    color: rgba(16, 24, 32, 0.62);
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 0.74rem;
+    font-weight: 800;
+    text-align: left;
+    cursor: pointer;
+    transition: color var(--transition), background var(--transition), transform var(--transition);
+}
+
+.journey-step span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(0, 113, 227, 0.22);
+    transition: transform var(--transition), background var(--transition);
+}
+
+.journey-step:hover,
+.journey-step.active {
+    color: var(--primary-dark);
+    background: rgba(255, 255, 255, 0.58);
+}
+
+.journey-step.active span {
+    background: var(--primary-color);
+    transform: scale(1.25);
+}
+
+.journey-focus {
+    animation: journeyFocus 1500ms ease both;
+}
+
+@keyframes journeyFocus {
+    0% {
+        filter: none;
+    }
+    35% {
+        filter: drop-shadow(0 0 32px rgba(0, 113, 227, 0.18));
+    }
+    100% {
+        filter: none;
+    }
+}
+
+section,
+.map-section {
+    scroll-margin-top: 110px;
+}
+
+@media (max-width: 1100px) {
+    .journey-guide {
+        right: 12px;
+        width: 150px;
+    }
+
+    .journey-step {
+        font-size: 0.68rem;
+    }
+}
+
+@media (max-width: 900px) {
+    .journey-guide {
+        left: 50%;
+        right: auto;
+        top: auto;
+        bottom: 14px;
+        width: min(560px, calc(100% - 24px));
+        grid-template-columns: 1fr;
+        transform: translateX(-50%);
+    }
+
+    .journey-progress {
+        display: none;
+    }
+
+    .journey-steps {
+        display: flex;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .journey-steps::-webkit-scrollbar {
+        display: none;
+    }
+
+    .journey-step {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    .featured-carousel {
+        grid-template-columns: 44px minmax(0, 1fr) 44px;
+        gap: 8px;
+    }
+
+    .carousel-btn {
+        width: 44px;
+        height: 44px;
+    }
+
+    .featured-carousel-track {
+        grid-auto-columns: minmax(230px, 72%);
+    }
+}
+
+@media (max-width: 640px) {
+    .featured-showcase {
+        padding: 18px;
+        border-radius: 26px;
+    }
+
+    .featured-showcase-header {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .featured-carousel {
+        grid-template-columns: 1fr;
+    }
+
+    .carousel-btn {
+        display: none;
+    }
+
+    .featured-carousel-track {
+        grid-auto-columns: 86%;
+    }
+
+    .journey-guide {
+        padding: 10px;
+        border-radius: 20px;
+    }
+
+    .journey-run {
+        min-height: 36px;
+    }
+}

@@ -147,6 +147,31 @@
     <section id="catalog" class="catalog">
         <div class="container">
             <h2 class="section-title">Каталог продукции</h2>
+
+            <!-- Избранная карусель -->
+            <div class="featured-showcase">
+                <div class="featured-showcase-header">
+                    <span class="featured-kicker">Selected for you</span>
+                    <div>
+                        <h3>Избранные позиции</h3>
+                        <p>Короткая премиальная подборка для быстрого выбора без просмотра всего каталога.</p>
+                    </div>
+                </div>
+                <div class="featured-carousel">
+                    <button class="carousel-btn carousel-prev" type="button" aria-label="Предыдущие товары">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="featured-carousel-window">
+                        <div class="featured-carousel-track" aria-live="polite">
+                            <!-- Избранные товары будут добавлены через JavaScript -->
+                        </div>
+                    </div>
+                    <button class="carousel-btn carousel-next" type="button" aria-label="Следующие товары">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="featured-carousel-dots" aria-label="Навигация по избранным товарам"></div>
+            </div>
             
             <!-- Фильтры и сортировка -->
             <div class="catalog-controls">

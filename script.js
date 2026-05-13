@@ -302,6 +302,8 @@ const products = [
     }
 ];
 
+const featuredProductIds = [11, 1, 3, 8, 9, 6];
+
 // Корзина
 let cart = [];
 let cartCount = 0;
@@ -311,6 +313,10 @@ let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
 
 // DOM элементы
 const productsGrid = document.querySelector('.products-grid');
+const featuredCarouselTrack = document.querySelector('.featured-carousel-track');
+const featuredCarouselDots = document.querySelector('.featured-carousel-dots');
+const featuredCarouselPrev = document.querySelector('.carousel-prev');
+const featuredCarouselNext = document.querySelector('.carousel-next');
 const cartIcon = document.querySelector('.cart-icon');
 const cartCountElement = document.querySelector('.cart-count');
 const cartModal = document.getElementById('cart-modal');
@@ -364,6 +370,7 @@ const productModalContainer = document.querySelector('.product-modal-container')
 document.addEventListener('DOMContentLoaded', function() {
     initMap();
     generateUnderwaterScene();
+    renderFeaturedCarousel();
     renderProducts(products);
     initEventListeners();
     updateCartCount();
@@ -387,6 +394,8 @@ function initEventListeners() {
     
     // Сортировка
     sortSelect.addEventListener('change', handleSortChange);
+
+    initFeaturedCarouselControls();
     
     // Закрытие модального окна при клике вне его
     cartModal.addEventListener('click', function(e) {
@@ -402,8 +411,11 @@ function initEventListeners() {
     // Плавная прокрутка для якорных ссылок
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
+            const href = this.getAttribute('href');
+            if (!href || href === '#') return;
+
             e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
+            const target = document.querySelector(href);
             if (target) {
                 target.scrollIntoView({
                     behavior: 'smooth',
@@ -469,6 +481,94 @@ function initEventListeners() {
         if (e.target === productModal) {
             closeProductModalWindow();
         }
+    });
+}
+
+function getFeaturedProducts() {
+    return featuredProductIds
+        .map(id => products.find(product => product.id === id))
+        .filter(Boolean);
+}
+
+function renderFeaturedCarousel() {
+    if (!featuredCarouselTrack) return;
+
+    featuredCarouselTrack.innerHTML = '';
+
+    getFeaturedProducts().forEach(product => {
+        const card = createProductCard(product);
+        card.classList.add('featured-product-card');
+        featuredCarouselTrack.appendChild(card);
+    });
+
+    renderFeaturedCarouselDots();
+    requestAnimationFrame(updateFeaturedCarouselState);
+}
+
+function renderFeaturedCarouselDots() {
+    if (!featuredCarouselDots) return;
+
+    featuredCarouselDots.innerHTML = '';
+    getFeaturedProducts().forEach((product, index) => {
+        const dot = document.createElement('button');
+        dot.className = 'featured-carousel-dot';
+        dot.type = 'button';
+        dot.setAttribute('aria-label', `Показать товар: ${product.name}`);
+        dot.addEventListener('click', () => scrollFeaturedCarouselTo(index));
+        featuredCarouselDots.appendChild(dot);
+    });
+}
+
+function initFeaturedCarouselControls() {
+    if (!featuredCarouselTrack) return;
+
+    featuredCarouselPrev?.addEventListener('click', () => {
+        featuredCarouselTrack.scrollBy({ left: -getFeaturedCarouselStep(), behavior: 'smooth' });
+    });
+
+    featuredCarouselNext?.addEventListener('click', () => {
+        featuredCarouselTrack.scrollBy({ left: getFeaturedCarouselStep(), behavior: 'smooth' });
+    });
+
+    featuredCarouselTrack.addEventListener('scroll', updateFeaturedCarouselState, { passive: true });
+    window.addEventListener('resize', updateFeaturedCarouselState);
+}
+
+function getFeaturedCarouselStep() {
+    const firstCard = featuredCarouselTrack?.querySelector('.featured-product-card');
+    if (!firstCard) return 320;
+
+    const trackStyles = window.getComputedStyle(featuredCarouselTrack);
+    const gap = parseFloat(trackStyles.columnGap || trackStyles.gap || 0);
+    return firstCard.getBoundingClientRect().width + gap;
+}
+
+function scrollFeaturedCarouselTo(index) {
+    if (!featuredCarouselTrack) return;
+
+    featuredCarouselTrack.scrollTo({
+        left: getFeaturedCarouselStep() * index,
+        behavior: 'smooth'
+    });
+}
+
+function updateFeaturedCarouselState() {
+    if (!featuredCarouselTrack) return;
+
+    const step = getFeaturedCarouselStep();
+    const activeIndex = Math.round(featuredCarouselTrack.scrollLeft / step);
+    const maxScroll = featuredCarouselTrack.scrollWidth - featuredCarouselTrack.clientWidth;
+
+    if (featuredCarouselPrev) {
+        featuredCarouselPrev.disabled = featuredCarouselTrack.scrollLeft <= 4;
+    }
+
+    if (featuredCarouselNext) {
+        featuredCarouselNext.disabled = featuredCarouselTrack.scrollLeft >= maxScroll - 4;
+    }
+
+    featuredCarouselDots?.querySelectorAll('.featured-carousel-dot').forEach((dot, index) => {
+        dot.classList.toggle('active', index === activeIndex);
     });
 }
 
@@ -1118,6 +1218,10 @@ function toggleFavorite(productId, button) {
     
     // Сохраняем в localStorage
     localStorage.setItem('favorites', JSON.stringify(favorites));
+
+    document.querySelectorAll(`.favorite-btn[data-id="${productId}"]`).forEach(favoriteButton => {
+        favoriteButton.classList.toggle('active', favorites.includes(productId));
+    });
     
     // Обновляем счетчик в меню пользователя
     updateFavoritesCount();
