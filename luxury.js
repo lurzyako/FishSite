@@ -16,7 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
         '.delivery-form',
         '.contact-form',
         '.featured-showcase',
-        '.featured-product-card'
+        '.featured-product-card',
+        '.proof-card',
+        '.footer-cta'
     ].join(',');
 
     document.addEventListener('click', (event) => {
@@ -79,20 +81,30 @@ document.addEventListener('DOMContentLoaded', () => {
             '.hero-text h2',
             '.hero-text p',
             '.hero-actions',
+            '.hero-proof-item',
             '.hero-image',
+            '.hero-card-tags',
+            '.section-heading',
+            '.section-eyebrow',
             '.featured-showcase',
             '.featured-product-card',
             '.featured-showcase-header',
+            '.quality-proof-copy',
+            '.proof-card',
             '.advantage-card',
             '.catalog-controls',
+            '.catalog-quick-filters',
+            '.catalog-proof-row',
             '.filter-section',
             '.sort-section',
             '.product-card',
             '.about-text',
             '.about-text p',
+            '.about-signature',
             '.stat',
             '.about-image',
             '.delivery-step',
+            '.delivery-note',
             '.delivery-form',
             '.form-group',
             '.contact-item',
@@ -167,6 +179,30 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll(tiltSelector).forEach(bindTiltCard);
     }
 
+    function bindMagneticButton(button) {
+        if (prefersReducedMotion || button.dataset.luxuryMagneticBound === 'true') return;
+        button.dataset.luxuryMagneticBound = 'true';
+        button.classList.add('luxury-magnetic');
+
+        button.addEventListener('pointermove', (event) => {
+            const rect = button.getBoundingClientRect();
+            const x = event.clientX - rect.left - rect.width / 2;
+            const y = event.clientY - rect.top - rect.height / 2;
+
+            button.style.setProperty('--magnetic-x', `${(x * 0.14).toFixed(2)}px`);
+            button.style.setProperty('--magnetic-y', `${(y * 0.18).toFixed(2)}px`);
+        });
+
+        button.addEventListener('pointerleave', () => {
+            button.style.setProperty('--magnetic-x', '0px');
+            button.style.setProperty('--magnetic-y', '0px');
+        });
+    }
+
+    function setupMagneticButtons() {
+        document.querySelectorAll('.btn, .carousel-btn, .filter-btn').forEach(bindMagneticButton);
+    }
+
     function setupConceptScroll() {
         if (document.querySelector('.scroll-current')) return;
 
@@ -211,6 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setupReveal();
     setupTilt();
+    setupMagneticButtons();
     setupConceptScroll();
     updateHeader();
     updateParallax();
@@ -219,6 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mutationObserver = new MutationObserver(() => {
         setupReveal();
         setupTilt();
+        setupMagneticButtons();
     });
 
     mutationObserver.observe(document.body, {

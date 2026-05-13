@@ -371,9 +371,14 @@ document.addEventListener('DOMContentLoaded', function() {
     initMap();
     generateUnderwaterScene();
     renderFeaturedCarousel();
-    renderProducts(products);
     initEventListeners();
-    applyInitialCategoryFilter();
+    if (productsGrid) {
+        renderProductSkeletons();
+        window.setTimeout(() => {
+            renderProducts(products);
+            applyInitialCategoryFilter();
+        }, 160);
+    }
     updateCartCount();
     checkAuth();
     updateFavoritesCount();
@@ -654,6 +659,22 @@ function renderProducts(productsToRender) {
     });
 }
 
+function renderProductSkeletons() {
+    if (!productsGrid) return;
+
+    productsGrid.innerHTML = Array.from({ length: 6 }, () => `
+        <div class="product-card product-card-skeleton" aria-hidden="true">
+            <div class="skeleton-image"></div>
+            <div class="skeleton-body">
+                <span></span>
+                <strong></strong>
+                <p></p>
+                <p></p>
+            </div>
+        </div>
+    `).join('');
+}
+
 // Создание карточки товара
 function createProductCard(product) {
     const card = document.createElement('div');
@@ -666,11 +687,20 @@ function createProductCard(product) {
         </button>
         <div class="product-card-content">
             <div class="product-image">
-                ${product.image}
+                <span>${product.image}</span>
+                <small class="product-badge">${getProductBadge(product)}</small>
             </div>
             <div class="product-info">
-                <span class="product-category">${getCategoryName(product.category)}</span>
+                <div class="product-topline">
+                    <span class="product-category">${getCategoryName(product.category)}</span>
+                    <span class="product-origin">${product.origin}</span>
+                </div>
                 <h3 class="product-title">${product.name}</h3>
+                <p class="product-description">${product.description}</p>
+                <div class="product-meta">
+                    <span><i class="fas fa-box"></i>${product.weight}</span>
+                    <span><i class="fas fa-temperature-low"></i>${product.storage}</span>
+                </div>
                 <div class="product-price">${product.price} руб./кг</div>
                 <div class="product-actions">
                     <div class="quantity-controls">
@@ -861,11 +891,7 @@ function handleFilterClick(e) {
     filterButtons.forEach(btn => btn.classList.remove('active'));
     e.target.classList.add('active');
     
-    // Фильтруем товары
-    let filteredProducts = products;
-    if (category !== 'all') {
-        filteredProducts = products.filter(product => product.category === category);
-    }
+    const filteredProducts = filterProductsByCategory(category);
     
     // Применяем сортировку
     const sortedProducts = applySorting(filteredProducts, sortSelect?.value || 'popular');
@@ -875,11 +901,7 @@ function handleFilterClick(e) {
 // Обработчик сортировки
 function handleSortChange() {
     const currentFilter = document.querySelector('.filter-btn.active')?.dataset.category || 'all';
-    let filteredProducts = products;
-    
-    if (currentFilter !== 'all') {
-        filteredProducts = products.filter(product => product.category === currentFilter);
-    }
+    const filteredProducts = filterProductsByCategory(currentFilter);
     
     const sortedProducts = applySorting(filteredProducts, sortSelect?.value || 'popular');
     renderProducts(sortedProducts);
@@ -899,11 +921,24 @@ function applyInitialCategoryFilter() {
     filterButtons.forEach(button => button.classList.remove('active'));
     selectedButton.classList.add('active');
 
-    const filteredProducts = selectedCategory === 'all'
-        ? products
-        : products.filter(product => product.category === selectedCategory);
+    const filteredProducts = filterProductsByCategory(selectedCategory);
 
     renderProducts(applySorting(filteredProducts, sortSelect?.value || 'popular'));
+}
+
+function filterProductsByCategory(category) {
+    switch (category) {
+        case 'premium':
+            return products.filter(product => product.price >= 1100 || [3, 8, 11].includes(product.id));
+        case 'restaurant':
+            return products.filter(product => ['seafood', 'fillets'].includes(product.category) || product.weight.includes('кг'));
+        case 'fresh-catch':
+            return products.filter(product => product.category === 'fresh');
+        case 'all':
+        default:
+            if (!category || category === 'all') return products;
+            return products.filter(product => product.category === category);
+    }
 }
 
 // Применение сортировки
@@ -929,9 +964,19 @@ function getCategoryName(category) {
         'fresh': 'Охлажденная рыба',
         'frozen': 'Замороженная рыба',
         'seafood': 'Морепродукты',
-        'fillets': 'Филе и стейки'
+        'fillets': 'Филе и стейки',
+        'premium': 'Премиум',
+        'restaurant': 'Для ресторана',
+        'fresh-catch': 'Свежий улов'
     };
     return categories[category] || category;
+}
+
+function getProductBadge(product) {
+    if (product.price >= 1800 || product.id === 11) return 'Premium';
+    if (product.popular) return 'Bestseller';
+    if (product.category === 'fresh') return 'Fresh catch';
+    return 'Chef pick';
 }
 
 // Мобильное меню
