@@ -1479,8 +1479,8 @@ body .mode-switcher .btn-sm:hover {
 }
 
 .hero {
-    min-height: 96vh;
-    padding: 150px 0 108px;
+    min-height: min(920px, 96vh);
+    padding: 142px 0 96px;
     background: #eef7ff;
 }
 
@@ -1511,15 +1511,15 @@ body .mode-switcher .btn-sm:hover {
 }
 
 .hero-content {
-    grid-template-columns: minmax(0, 1fr) minmax(340px, 0.64fr);
+    grid-template-columns: minmax(0, 0.96fr) minmax(320px, 0.72fr);
     align-items: center;
-    gap: clamp(38px, 8vw, 104px);
-    min-height: 600px;
+    gap: clamp(42px, 6.5vw, 86px);
+    min-height: 560px;
 }
 
 .hero-text {
     color: var(--text-dark);
-    max-width: 680px;
+    max-width: 640px;
 }
 
 .hero-kicker {
@@ -1535,19 +1535,20 @@ body .mode-switcher .btn-sm:hover {
 
 .hero-text h2 {
     color: var(--text-dark);
-    max-width: 720px;
+    max-width: 680px;
     font-family: var(--font-display);
-    font-size: clamp(4rem, 8vw, 7.6rem);
+    font-size: clamp(3.6rem, 6.7vw, 6.5rem);
     font-weight: 800;
-    letter-spacing: -0.065em;
-    line-height: 0.9;
+    letter-spacing: -0.055em;
+    line-height: 0.94;
+    text-wrap: balance;
 }
 
 .hero-text p {
     color: rgba(16, 24, 32, 0.68);
-    max-width: 570px;
+    max-width: 540px;
     font-size: clamp(1.08rem, 1.35vw, 1.28rem);
-    line-height: 1.72;
+    line-height: 1.68;
 }
 
 .hero-actions {
@@ -1559,12 +1560,13 @@ body .mode-switcher .btn-sm:hover {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
-    max-width: 520px;
-    margin-top: 34px;
+    max-width: 560px;
+    margin-top: 28px;
 }
 
 .hero-proof-item {
-    padding: 14px 16px;
+    min-width: 0;
+    padding: 13px 14px;
     border: 1px solid rgba(255, 255, 255, 0.74);
     border-radius: 20px;
     background: rgba(255, 255, 255, 0.54);
@@ -1595,13 +1597,18 @@ body .mode-switcher .btn-sm:hover {
 
 .hero-image {
     justify-content: flex-end;
+    min-width: 0;
 }
 
 .luxury-hero-card {
-    width: min(410px, 100%);
-    min-height: 538px;
+    display: grid;
+    grid-template-rows: auto auto auto;
+    gap: 14px;
+    width: min(390px, 100%);
+    min-height: auto;
+    padding: 14px;
     border: 1px solid rgba(255, 255, 255, 0.7);
-    border-radius: 36px;
+    border-radius: 32px;
     background:
         linear-gradient(145deg, rgba(255, 255, 255, 0.68), rgba(230, 246, 255, 0.34));
     box-shadow:
@@ -1616,8 +1623,8 @@ body .mode-switcher .btn-sm:hover {
 }
 
 .hero-card-image {
-    height: 390px;
-    border-radius: 26px;
+    height: clamp(280px, 38vw, 360px);
+    border-radius: 24px;
     background:
         linear-gradient(180deg, transparent 50%, rgba(7, 17, 31, 0.52)),
         url('assets/luxury-seafood-hero.jpg') center 38% / cover no-repeat;
@@ -1625,17 +1632,18 @@ body .mode-switcher .btn-sm:hover {
 
 .hero-card-tags {
     position: absolute;
-    left: 22px;
-    right: 22px;
-    top: 22px;
+    left: 24px;
+    right: 24px;
+    top: 24px;
     z-index: 2;
     display: flex;
-    justify-content: space-between;
-    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 8px;
 }
 
 .hero-card-tags span {
-    padding: 8px 11px;
+    padding: 7px 10px;
     border: 1px solid rgba(255, 255, 255, 0.54);
     border-radius: 999px;
     color: #fff;
@@ -1651,7 +1659,7 @@ body .mode-switcher .btn-sm:hover {
 
 .hero-card-caption {
     color: var(--text-dark);
-    padding: 22px 18px 4px;
+    padding: 2px 6px 0;
 }
 
 .hero-card-caption span {
@@ -1662,7 +1670,7 @@ body .mode-switcher .btn-sm:hover {
 .hero-card-caption strong {
     color: var(--text-dark);
     font-family: var(--font-display);
-    font-size: 1.9rem;
+    font-size: 1.72rem;
     letter-spacing: -0.04em;
 }
 
@@ -1671,10 +1679,20 @@ body .mode-switcher .btn-sm:hover {
 }
 
 .hero-card-metric {
+    position: static;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: auto;
+    padding: 15px 16px;
     border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: 20px;
     color: var(--text-dark);
-    background: rgba(255, 255, 255, 0.72);
-    box-shadow: 0 22px 55px rgba(36, 91, 151, 0.18);
+    background: rgba(255, 255, 255, 0.62);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.84),
+        0 16px 42px rgba(36, 91, 151, 0.13);
     backdrop-filter: saturate(180%) blur(20px);
     -webkit-backdrop-filter: saturate(180%) blur(20px);
 }
@@ -1682,7 +1700,21 @@ body .mode-switcher .btn-sm:hover {
 .hero-card-metric span {
     color: var(--primary-color);
     font-family: var(--font-display);
+    font-size: 2rem;
     letter-spacing: -0.05em;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.hero-card-metric p {
+    max-width: 150px;
+    margin: 0;
+    color: rgba(16, 24, 32, 0.58);
+    font-size: 0.72rem;
+    font-weight: 900;
+    line-height: 1.2;
+    text-align: right;
+    text-transform: uppercase;
 }
 
 .section-title {
@@ -2560,6 +2592,15 @@ body .mode-description {
         margin-right: auto;
     }
 
+    .luxury-hero-card {
+        width: min(440px, 100%);
+        min-height: auto;
+    }
+
+    .hero-card-image {
+        height: 330px;
+    }
+
     .quality-proof-layout {
         grid-template-columns: 1fr;
     }
@@ -2623,11 +2664,18 @@ body .mode-description {
     }
 
     .hero-text h2 {
-        font-size: clamp(3.1rem, 17vw, 5rem);
+        font-size: clamp(3rem, 14vw, 4.8rem);
+        line-height: 0.96;
     }
 
     .hero-card-metric {
-        right: 18px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .hero-card-metric p {
+        max-width: none;
+        text-align: left;
     }
 
     .advantages,
@@ -3167,6 +3215,54 @@ section,
 @media (max-width: 640px) {
     .scroll-current {
         display: none;
+    }
+
+    .hero {
+        padding-top: 118px;
+        padding-bottom: 72px;
+    }
+
+    .hero-content {
+        gap: 34px;
+    }
+
+    .hero-text h2 {
+        font-size: clamp(2.72rem, 13.8vw, 4rem);
+    }
+
+    .hero-text p {
+        font-size: 1rem;
+        line-height: 1.62;
+    }
+
+    .hero-actions .btn {
+        width: 100%;
+        max-width: none;
+    }
+
+    .hero-proof-item {
+        padding: 12px 14px;
+    }
+
+    .luxury-hero-card {
+        width: 100%;
+        border-radius: 26px;
+        padding: 12px;
+    }
+
+    .hero-card-image {
+        height: 250px;
+        border-radius: 20px;
+    }
+
+    .hero-card-tags {
+        left: 20px;
+        right: 20px;
+        top: 20px;
+    }
+
+    .hero-card-tags span {
+        font-size: 0.62rem;
     }
 
     .featured-showcase {
