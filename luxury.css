@@ -1815,8 +1815,335 @@ body .mode-switcher .btn-sm:hover {
 
 .advantages {
     background:
-        radial-gradient(circle at 12% 12%, rgba(90, 200, 250, 0.14), transparent 24rem),
-        linear-gradient(180deg, #fbfdff 0%, #f3faff 100%);
+        linear-gradient(135deg, rgba(0, 113, 227, 0.11) 0%, transparent 28%),
+        linear-gradient(180deg, #f7fbff 0%, #dfedfb 54%, #f9fcff 100%);
+}
+
+.advantages-showcase {
+    display: grid;
+    grid-template-columns: minmax(0, 0.88fr) minmax(360px, 0.72fr);
+    gap: clamp(34px, 6vw, 78px);
+    align-items: center;
+    margin-bottom: 34px;
+}
+
+.advantages-copy {
+    max-width: 690px;
+}
+
+.advantages-copy .section-title {
+    margin-bottom: 22px;
+    text-align: left;
+}
+
+.advantages-copy .section-title::after {
+    margin-left: 0;
+}
+
+.advantages-copy p {
+    max-width: 610px;
+    color: rgba(16, 24, 32, 0.66);
+    font-size: clamp(1.04rem, 1.45vw, 1.22rem);
+    line-height: 1.76;
+}
+
+.advantages-proof-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 26px;
+}
+
+.advantages-proof-line span {
+    padding: 10px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.74);
+    border-radius: 999px;
+    color: var(--primary-dark);
+    background: rgba(255, 255, 255, 0.58);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82), 0 14px 34px rgba(36, 91, 151, 0.08);
+    font-size: 0.8rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    backdrop-filter: saturate(180%) blur(18px);
+    -webkit-backdrop-filter: saturate(180%) blur(18px);
+}
+
+.advantages-stage {
+    position: relative;
+    min-height: 470px;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: 36px;
+    padding: 14px;
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.68), rgba(225, 244, 255, 0.38));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        0 34px 92px rgba(36, 91, 151, 0.16);
+    overflow: hidden;
+    transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+    transition: transform var(--transition), box-shadow var(--transition);
+    backdrop-filter: saturate(180%) blur(28px);
+    -webkit-backdrop-filter: saturate(180%) blur(28px);
+}
+
+.advantages-stage::after {
+    content: '';
+    position: absolute;
+    inset: 14px;
+    border-radius: 28px;
+    background:
+        linear-gradient(180deg, transparent 34%, rgba(6, 20, 42, 0.46)),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 46%);
+    pointer-events: none;
+}
+
+.advantages-stage img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 442px;
+    border-radius: 28px;
+    object-fit: cover;
+    object-position: center 46%;
+    transform: scale(1.02);
+    animation: advantageImageDrift 12s ease-in-out infinite alternate;
+}
+
+.advantages-stage-card,
+.advantages-temperature {
+    position: absolute;
+    z-index: 2;
+    border: 1px solid rgba(255, 255, 255, 0.58);
+    background: rgba(255, 255, 255, 0.7);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82), 0 20px 58px rgba(15, 39, 66, 0.16);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+
+.advantages-stage-card {
+    left: 34px;
+    bottom: 34px;
+    width: min(245px, calc(100% - 68px));
+    padding: 18px;
+    border-radius: 24px;
+    animation: advantageFloat 5.4s ease-in-out infinite;
+}
+
+.advantages-stage-card span,
+.advantages-stage-card p {
+    color: rgba(16, 24, 32, 0.58);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.advantages-stage-card strong {
+    display: block;
+    margin: 6px 0;
+    color: var(--primary-color);
+    font-family: var(--font-display);
+    font-size: 3.2rem;
+    line-height: 0.92;
+    letter-spacing: -0.05em;
+}
+
+.advantages-stage-card p {
+    margin: 0;
+    letter-spacing: 0.08em;
+}
+
+.advantages-temperature {
+    top: 34px;
+    right: 34px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 999px;
+    color: var(--primary-dark);
+    font-weight: 900;
+}
+
+.advantages-temperature i {
+    color: var(--primary-color);
+    animation: coldPulse 2.6s ease-in-out infinite;
+}
+
+.luxury-advantages-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.luxury-advantages-grid .advantage-card {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-height: 440px;
+    padding: 12px;
+    border-radius: 32px;
+    text-align: left;
+    overflow: hidden;
+}
+
+.advantage-visual {
+    position: relative;
+    min-height: 172px;
+    border-radius: 24px;
+    overflow: hidden;
+    background: #dcecff;
+}
+
+.advantage-visual::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(180deg, rgba(6, 20, 42, 0.04), rgba(6, 20, 42, 0.36)),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.24), transparent 44%);
+}
+
+.advantage-visual img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: inherit;
+    object-fit: cover;
+    transform: scale(1.04);
+    transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1), filter var(--transition);
+}
+
+.advantage-card-temperature .advantage-visual img {
+    object-position: 42% 44%;
+}
+
+.advantage-card-suppliers .advantage-visual img {
+    object-position: 68% 42%;
+}
+
+.advantage-card-service .advantage-visual img {
+    object-position: 36% 58%;
+}
+
+.advantage-card-delivery .advantage-visual img {
+    object-position: 74% 54%;
+}
+
+.advantage-index {
+    position: absolute;
+    right: 14px;
+    top: 14px;
+    z-index: 2;
+    color: rgba(255, 255, 255, 0.9);
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+    text-shadow: 0 12px 28px rgba(6, 20, 42, 0.28);
+}
+
+.advantage-content {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    align-content: start;
+    padding: 0 10px 8px;
+}
+
+.luxury-advantages-grid .advantage-icon {
+    width: 58px;
+    height: 58px;
+    margin: -29px 0 18px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 19px;
+    font-size: 1.25rem;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.38),
+        0 18px 42px rgba(0, 113, 227, 0.24);
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.luxury-advantages-grid .advantage-card h3 {
+    margin: 0 0 12px;
+    color: var(--text-dark);
+    font-family: var(--font-display);
+    font-size: clamp(1.45rem, 2vw, 1.92rem);
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+}
+
+.luxury-advantages-grid .advantage-card p {
+    margin: 0;
+    color: rgba(16, 24, 32, 0.63);
+    font-size: 0.95rem;
+    line-height: 1.58;
+}
+
+.advantage-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 6px 10px 4px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(0, 113, 227, 0.11);
+    color: var(--primary-dark);
+    font-size: 0.74rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.advantage-card-footer i {
+    transition: transform var(--transition);
+}
+
+.luxury-advantages-grid .advantage-card:hover .advantage-visual img {
+    filter: saturate(1.08) contrast(1.04);
+    transform: scale(1.12);
+}
+
+.luxury-advantages-grid .advantage-card:hover .advantage-icon {
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.42),
+        0 24px 54px rgba(0, 113, 227, 0.3);
+    transform: translateY(-4px);
+}
+
+.luxury-advantages-grid .advantage-card:hover .advantage-card-footer i {
+    transform: translateX(5px);
+}
+
+@keyframes advantageImageDrift {
+    from {
+        transform: scale(1.02) translate3d(-1.2%, -0.8%, 0);
+    }
+    to {
+        transform: scale(1.08) translate3d(1.4%, 1%, 0);
+    }
+}
+
+@keyframes advantageFloat {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes coldPulse {
+    0%,
+    100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 0 rgba(90, 200, 250, 0));
+    }
+    50% {
+        transform: scale(1.12);
+        filter: drop-shadow(0 0 14px rgba(90, 200, 250, 0.55));
+    }
 }
 
 .quality-proof {
@@ -2601,6 +2928,42 @@ body .mode-description {
         height: 330px;
     }
 
+    .advantages-showcase {
+        grid-template-columns: 1fr;
+    }
+
+    .advantages-copy {
+        max-width: 780px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .advantages-copy .section-title {
+        text-align: center;
+    }
+
+    .advantages-copy .section-title::after {
+        margin-left: auto;
+    }
+
+    .advantages-copy p {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .advantages-proof-line {
+        justify-content: center;
+    }
+
+    .advantages-stage {
+        max-width: 620px;
+        margin: 0 auto;
+    }
+
+    .luxury-advantages-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .quality-proof-layout {
         grid-template-columns: 1fr;
     }
@@ -2691,6 +3054,39 @@ body .mode-description {
     .hero-proof-strip,
     .quality-proof-grid {
         grid-template-columns: 1fr;
+    }
+
+    .advantages-stage {
+        min-height: 400px;
+        border-radius: 28px;
+    }
+
+    .advantages-stage img {
+        min-height: 372px;
+        border-radius: 22px;
+    }
+
+    .advantages-stage-card {
+        left: 24px;
+        bottom: 24px;
+        width: min(230px, calc(100% - 48px));
+    }
+
+    .advantages-temperature {
+        top: 24px;
+        right: 24px;
+    }
+
+    .luxury-advantages-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .luxury-advantages-grid .advantage-card {
+        min-height: auto;
+    }
+
+    .advantage-visual {
+        min-height: 220px;
     }
 
     .catalog-page .catalog-controls {
@@ -3141,6 +3537,12 @@ body[data-scroll-stage="4"] .scroll-current-orb {
     .scroll-current-particle {
         animation: none;
     }
+
+    .advantages-stage img,
+    .advantages-stage-card,
+    .advantages-temperature i {
+        animation: none;
+    }
 }
 
 section,
@@ -3263,6 +3665,42 @@ section,
 
     .hero-card-tags span {
         font-size: 0.62rem;
+    }
+
+    .advantages-showcase {
+        margin-bottom: 24px;
+    }
+
+    .advantages-stage {
+        min-height: 350px;
+        padding: 12px;
+    }
+
+    .advantages-stage img {
+        min-height: 326px;
+    }
+
+    .advantages-stage-card {
+        left: 22px;
+        bottom: 22px;
+        padding: 14px;
+    }
+
+    .advantages-stage-card strong {
+        font-size: 2.45rem;
+    }
+
+    .advantages-temperature {
+        top: 22px;
+        right: 22px;
+    }
+
+    .advantages-proof-line {
+        justify-content: flex-start;
+    }
+
+    .advantage-visual {
+        min-height: 190px;
     }
 
     .featured-showcase {
