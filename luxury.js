@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const header = document.querySelector('.header');
     const hero = document.querySelector('.hero');
+    let lastScrollY = window.scrollY;
     const tiltSelector = [
         '.luxury-hero-card',
         '.advantage-card',
@@ -27,7 +28,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateHeader() {
         if (!header) return;
-        header.classList.toggle('luxury-scrolled', window.scrollY > 18);
+        const currentScrollY = Math.max(0, window.scrollY);
+        const scrollDelta = currentScrollY - lastScrollY;
+        const navIsOpen = document.querySelector('.nav.active') || document.querySelector('.mobile-menu-toggle.active');
+
+        header.classList.toggle('luxury-scrolled', currentScrollY > 12);
+
+        if (currentScrollY < 92 || navIsOpen) {
+            header.classList.remove('luxury-hidden');
+        } else if (scrollDelta > 6) {
+            header.classList.add('luxury-hidden');
+        } else if (scrollDelta < -6) {
+            header.classList.remove('luxury-hidden');
+        }
+
+        lastScrollY = currentScrollY;
     }
 
     function updateParallax() {
