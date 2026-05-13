@@ -582,7 +582,7 @@ function renderOrders() {
                 <i class="fas fa-box-open"></i>
                 <h3>Заказы не найдены</h3>
                 <p>${getEmptyStateMessage()}</p>
-                <a href="index.html#catalog" class="btn btn-primary">Сделать первый заказ</a>
+                <a href="catalog.html" class="btn btn-primary">Сделать первый заказ</a>
             </div>
         `;
         return;

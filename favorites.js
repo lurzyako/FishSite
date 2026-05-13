@@ -361,7 +361,7 @@ function browseCategory(category) {
     localStorage.setItem('selectedCategory', category);
     
     // Перенаправляем в каталог
-    window.location.href = 'index.html#catalog';
+    window.location.href = 'catalog.html';
 }
 
 // Функция показа уведомления

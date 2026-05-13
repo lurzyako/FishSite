@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог продукции | Морские Дары</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="luxury.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>Морские Дары</h1>
+                    <p>ИП Чепурнова О.И.</p>
+                </div>
+
+                <nav class="nav">
+                    <ul class="nav-list">
+                        <li><a href="catalog.html">Каталог</a></li>
+                        <li><a href="index.html#about">О компании</a></li>
+                        <li><a href="index.html#delivery">Доставка</a></li>
+                        <li><a href="index.html#contacts">Контакты</a></li>
+                    </ul>
+                </nav>
+
+                <div class="header-actions">
+                    <div class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </div>
+
+                    <button class="btn btn-outline login-btn" id="login-btn">Войти</button>
+
+                    <div class="user-menu" id="user-menu" style="display: none;">
+                        <div class="user-avatar" id="user-avatar">ОИ</div>
+                        <div class="user-dropdown" id="user-dropdown">
+                            <div class="user-info">
+                                <h4 id="user-name">Ольга Ивановна</h4>
+                                <p id="user-email">olga@example.com</p>
+                            </div>
+                            <div class="user-links">
+                                <a href="account.html"><i class="fas fa-user"></i> Личный кабинет</a>
+                                <a href="orders.html"><i class="fas fa-box"></i> Мои заказы</a>
+                                <a href="favorites.html"><i class="fas fa-heart"></i> Избранное <span class="favorites-count">(0)</span></a>
+                                <a href="#" class="logout" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="mobile-menu-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="catalog" class="catalog catalog-page">
+            <div class="container">
+                <div class="catalog-page-header">
+                    <span class="hero-kicker">Full seafood catalog</span>
+                    <h1 class="section-title">Каталог продукции</h1>
+                    <p>Полный ассортимент охлажденной и замороженной рыбы, морепродуктов, филе и деликатесных позиций с удобной фильтрацией.</p>
+                </div>
+
+                <div class="catalog-controls">
+                    <div class="filter-section">
+                        <h3>Категории</h3>
+                        <div class="category-filters">
+                            <button class="filter-btn active" data-category="all">Все товары</button>
+                            <button class="filter-btn" data-category="fresh">Охлажденная рыба</button>
+                            <button class="filter-btn" data-category="frozen">Замороженная рыба</button>
+                            <button class="filter-btn" data-category="seafood">Морепродукты</button>
+                            <button class="filter-btn" data-category="fillets">Филе и стейки</button>
+                        </div>
+                    </div>
+
+                    <div class="sort-section">
+                        <label for="sort">Сортировать по:</label>
+                        <select id="sort">
+                            <option value="popular">Популярности</option>
+                            <option value="price-asc">Цене (по возрастанию)</option>
+                            <option value="price-desc">Цене (по убыванию)</option>
+                            <option value="name">Названию</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="products-grid">
+                    <!-- Товары будут добавляться динамически через JavaScript -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Морские Дары</h3>
+                    <p>ИП Чепурнова Ольга Ивановна</p>
+                    <p>Продажа и доставка охлажденной и замороженной рыбы и морепродуктов</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Каталог</h4>
+                    <ul>
+                        <li><a href="catalog.html">Охлажденная рыба</a></li>
+                        <li><a href="catalog.html">Замороженная рыба</a></li>
+                        <li><a href="catalog.html">Морепродукты</a></li>
+                        <li><a href="catalog.html">Филе и стейки</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Покупателям</h4>
+                    <ul>
+                        <li><a href="account.html">Личный кабинет</a></li>
+                        <li><a href="orders.html">Мои заказы</a></li>
+                        <li><a href="favorites.html">Избранное</a></li>
+                        <li><a href="index.html#delivery">Доставка и оплата</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Свяжитесь с нами</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-vk"></i></a>
+                        <a href="#"><i class="fab fa-telegram"></i></a>
+                        <a href="#"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 ИП Чепурнова О.И. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <div class="modal" id="cart-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Корзина</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="cart-items"></div>
+                <div class="cart-total">
+                    <p>Итого: <span class="total-price">0</span> руб.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline close-cart">Продолжить покупки</button>
+                <button class="btn btn-primary checkout-btn">Оформить заказ</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="auth-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Вход в личный кабинет</h2>
+                <button class="close-modal auth-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="auth-form">
+                    <div class="form-group">
+                        <label for="auth-email">Email</label>
+                        <input type="email" id="auth-email" placeholder="Введите ваш email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="auth-password">Пароль</label>
+                        <input type="password" id="auth-password" placeholder="Введите ваш пароль" required>
+                        <div class="password-toggle">
+                            <button type="button" class="toggle-password" id="toggle-password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group remember-me">
+                        <input type="checkbox" id="remember-me">
+                        <label for="remember-me">Запомнить меня</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Войти</button>
+                    <div class="auth-links">
+                        <a href="#" class="forgot-password">Забыли пароль?</a>
+                        <a href="#" class="register-link">Зарегистрироваться</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="checkout-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Оформление заказа</h2>
+                <button class="close-modal" id="close-checkout">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="checkout-form">
+                    <div class="form-group">
+                        <label for="checkout-name">ФИО *</label>
+                        <input type="text" id="checkout-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="checkout-phone">Телефон *</label>
+                        <input type="tel" id="checkout-phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="checkout-email">Email *</label>
+                        <input type="email" id="checkout-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="checkout-address">Адрес доставки *</label>
+                        <textarea id="checkout-address" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="checkout-comment">Комментарий к заказу</label>
+                        <textarea id="checkout-comment" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="checkout-payment">Способ оплаты</label>
+                        <select id="checkout-payment">
+                            <option value="cash">Наличными при получении</option>
+                            <option value="card">Картой при получении</option>
+                            <option value="online">Онлайн оплата</option>
+                        </select>
+                    </div>
+                    <div class="order-summary">
+                        <h4>Сумма заказа:</h4>
+                        <div class="summary-total">
+                            <span>Итого:</span>
+                            <span class="checkout-total">0 руб.</span>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Подтвердить заказ</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="luxury.js"></script>
+</body>
+</html>

@@ -89,7 +89,7 @@ function loadRecentOrders() {
                 <i class="fas fa-box-open"></i>
                 <h3>Заказов пока нет</h3>
                 <p>Совершите свой первый заказ и он появится здесь</p>
-                <a href="index.html#catalog" class="btn btn-primary">Перейти в каталог</a>
+                <a href="catalog.html" class="btn btn-primary">Перейти в каталог</a>
             </div>
         `;
         return;

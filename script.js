@@ -373,6 +373,7 @@ document.addEventListener('DOMContentLoaded', function() {
     renderFeaturedCarousel();
     renderProducts(products);
     initEventListeners();
+    applyInitialCategoryFilter();
     updateCartCount();
     checkAuth();
     updateFavoritesCount();
@@ -381,11 +382,12 @@ document.addEventListener('DOMContentLoaded', function() {
 // Инициализация обработчиков событий
 function initEventListeners() {
     // Мобильное меню
-    mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+    mobileMenuToggle?.addEventListener('click', toggleMobileMenu);
     
     // Корзина
-    cartIcon.addEventListener('click', openCartModal);
-    closeModal.addEventListener('click', closeCartModal);
+    cartIcon?.addEventListener('click', openCartModal);
+    closeModal?.addEventListener('click', closeCartModal);
+    document.querySelector('.close-cart')?.addEventListener('click', closeCartModal);
     
     // Фильтры
     filterButtons.forEach(button => {
@@ -393,20 +395,20 @@ function initEventListeners() {
     });
     
     // Сортировка
-    sortSelect.addEventListener('change', handleSortChange);
+    sortSelect?.addEventListener('change', handleSortChange);
 
     initFeaturedCarouselControls();
     
     // Закрытие модального окна при клике вне его
-    cartModal.addEventListener('click', function(e) {
+    cartModal?.addEventListener('click', function(e) {
         if (e.target === cartModal) {
             closeCartModal();
         }
     });
     
     // Формы
-    document.getElementById('contact-form').addEventListener('submit', handleContactFormSubmit);
-    document.getElementById('delivery-calculator').addEventListener('submit', handleDeliveryFormSubmit);
+    document.getElementById('contact-form')?.addEventListener('submit', handleContactFormSubmit);
+    document.getElementById('delivery-calculator')?.addEventListener('submit', handleDeliveryFormSubmit);
     
     // Плавная прокрутка для якорных ссылок
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -434,50 +436,50 @@ function initEventListeners() {
     }
     
     // Авторизация
-    loginBtn.addEventListener('click', openAuthModal);
-    authCloseBtn.addEventListener('click', closeAuthModal);
-    authForm.addEventListener('submit', handleAuthSubmit);
+    loginBtn?.addEventListener('click', openAuthModal);
+    authCloseBtn?.addEventListener('click', closeAuthModal);
+    authForm?.addEventListener('submit', handleAuthSubmit);
     
     // Меню пользователя
-    userAvatar.addEventListener('click', toggleUserDropdown);
-    logoutBtn.addEventListener('click', handleLogout);
+    userAvatar?.addEventListener('click', toggleUserDropdown);
+    logoutBtn?.addEventListener('click', handleLogout);
     
     // Переключение видимости пароля
-    togglePasswordBtn.addEventListener('click', togglePasswordVisibility);
+    togglePasswordBtn?.addEventListener('click', togglePasswordVisibility);
     
     // Ссылки в форме авторизации
-    forgotPasswordLink.addEventListener('click', handleForgotPassword);
-    registerLink.addEventListener('click', handleRegister);
+    forgotPasswordLink?.addEventListener('click', handleForgotPassword);
+    registerLink?.addEventListener('click', handleRegister);
     
     // Закрытие меню пользователя при клике вне его
     document.addEventListener('click', function(e) {
-        if (!userAvatar.contains(e.target) && !userDropdown.contains(e.target)) {
+        if (userAvatar && userDropdown && !userAvatar.contains(e.target) && !userDropdown.contains(e.target)) {
             userDropdown.classList.remove('active');
         }
     });
     
     // Закрытие модального окна авторизации при клике вне его
-    authModal.addEventListener('click', function(e) {
+    authModal?.addEventListener('click', function(e) {
         if (e.target === authModal) {
             closeAuthModal();
         }
     });
     
     // Оформление заказа
-    checkoutBtn.addEventListener('click', openCheckoutModal);
-    closeCheckoutBtn.addEventListener('click', closeCheckoutModal);
-    checkoutForm.addEventListener('submit', handleCheckoutSubmit);
+    checkoutBtn?.addEventListener('click', openCheckoutModal);
+    closeCheckoutBtn?.addEventListener('click', closeCheckoutModal);
+    checkoutForm?.addEventListener('submit', handleCheckoutSubmit);
     
-    checkoutModal.addEventListener('click', function(e) {
+    checkoutModal?.addEventListener('click', function(e) {
         if (e.target === checkoutModal) {
             closeCheckoutModal();
         }
     });
     
     // Модальное окно товара
-    closeProductModal.addEventListener('click', closeProductModalWindow);
+    closeProductModal?.addEventListener('click', closeProductModalWindow);
     
-    productModal.addEventListener('click', function(e) {
+    productModal?.addEventListener('click', function(e) {
         if (e.target === productModal) {
             closeProductModalWindow();
         }
@@ -496,24 +498,80 @@ function renderFeaturedCarousel() {
     featuredCarouselTrack.innerHTML = '';
 
     getFeaturedProducts().forEach(product => {
-        const card = createProductCard(product);
-        card.classList.add('featured-product-card');
+        const card = createFeaturedProductCard(product);
         featuredCarouselTrack.appendChild(card);
     });
 
-    renderFeaturedCarouselDots();
-    requestAnimationFrame(updateFeaturedCarouselState);
+    requestAnimationFrame(() => {
+        renderFeaturedCarouselDots();
+        updateFeaturedCarouselState();
+    });
+}
+
+function createFeaturedProductCard(product) {
+    const card = document.createElement('article');
+    card.className = 'featured-product-card';
+    card.dataset.id = product.id;
+    card.innerHTML = `
+        <div class="featured-product-visual">
+            <span>${product.image}</span>
+            <button class="favorite-btn ${favorites.includes(product.id) ? 'active' : ''}" data-id="${product.id}" aria-label="Добавить в избранное">
+                <i class="fas fa-heart"></i>
+            </button>
+        </div>
+        <div class="featured-product-content">
+            <span class="product-category">${getCategoryName(product.category)}</span>
+            <h3>${product.name}</h3>
+            <p>${product.description}</p>
+            <div class="featured-product-meta">
+                <span>${product.origin}</span>
+                <span>${product.storage}</span>
+            </div>
+            <div class="featured-product-footer">
+                <strong>${product.price} руб./кг</strong>
+                <div class="featured-product-actions">
+                    <button class="btn btn-outline featured-details" type="button" data-id="${product.id}">Подробнее</button>
+                    <button class="btn btn-primary featured-add" type="button" data-id="${product.id}" aria-label="Добавить в корзину">
+                        <i class="fas fa-cart-plus"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    card.querySelector('.favorite-btn')?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        toggleFavorite(product.id, event.currentTarget);
+    });
+
+    card.querySelector('.featured-details')?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        openProductModal(product.id);
+    });
+
+    card.querySelector('.featured-add')?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        addToCart(product.id, 1);
+    });
+
+    card.addEventListener('click', () => openProductModal(product.id));
+    return card;
 }
 
 function renderFeaturedCarouselDots() {
     if (!featuredCarouselDots) return;
 
     featuredCarouselDots.innerHTML = '';
-    getFeaturedProducts().forEach((product, index) => {
+    const featuredCount = getFeaturedProducts().length;
+    const maxScroll = Math.max(0, featuredCarouselTrack.scrollWidth - featuredCarouselTrack.clientWidth);
+    const step = getFeaturedCarouselStep();
+    const dotCount = Math.max(1, Math.min(featuredCount, Math.ceil(maxScroll / step) + 1));
+
+    Array.from({ length: dotCount }).forEach((_, index) => {
         const dot = document.createElement('button');
         dot.className = 'featured-carousel-dot';
         dot.type = 'button';
-        dot.setAttribute('aria-label', `Показать товар: ${product.name}`);
+        dot.setAttribute('aria-label', `Показать позицию ${index + 1}`);
         dot.addEventListener('click', () => scrollFeaturedCarouselTo(index));
         featuredCarouselDots.appendChild(dot);
     });
@@ -531,7 +589,10 @@ function initFeaturedCarouselControls() {
     });
 
     featuredCarouselTrack.addEventListener('scroll', updateFeaturedCarouselState, { passive: true });
-    window.addEventListener('resize', updateFeaturedCarouselState);
+    window.addEventListener('resize', () => {
+        renderFeaturedCarouselDots();
+        updateFeaturedCarouselState();
+    });
 }
 
 function getFeaturedCarouselStep() {
@@ -556,7 +617,11 @@ function updateFeaturedCarouselState() {
     if (!featuredCarouselTrack) return;
 
     const step = getFeaturedCarouselStep();
-    const activeIndex = Math.round(featuredCarouselTrack.scrollLeft / step);
+    const dots = [...(featuredCarouselDots?.querySelectorAll('.featured-carousel-dot') || [])];
+    const activeIndex = Math.min(
+        dots.length - 1,
+        Math.round(featuredCarouselTrack.scrollLeft / step)
+    );
     const maxScroll = featuredCarouselTrack.scrollWidth - featuredCarouselTrack.clientWidth;
 
     if (featuredCarouselPrev) {
@@ -567,13 +632,15 @@ function updateFeaturedCarouselState() {
         featuredCarouselNext.disabled = featuredCarouselTrack.scrollLeft >= maxScroll - 4;
     }
 
-    featuredCarouselDots?.querySelectorAll('.featured-carousel-dot').forEach((dot, index) => {
+    dots.forEach((dot, index) => {
         dot.classList.toggle('active', index === activeIndex);
     });
 }
 
 // Рендер товаров
 function renderProducts(productsToRender) {
+    if (!productsGrid) return;
+
     productsGrid.innerHTML = '';
     
     if (productsToRender.length === 0) {
@@ -801,21 +868,42 @@ function handleFilterClick(e) {
     }
     
     // Применяем сортировку
-    const sortedProducts = applySorting(filteredProducts, sortSelect.value);
+    const sortedProducts = applySorting(filteredProducts, sortSelect?.value || 'popular');
     renderProducts(sortedProducts);
 }
 
 // Обработчик сортировки
 function handleSortChange() {
-    const currentFilter = document.querySelector('.filter-btn.active').dataset.category;
+    const currentFilter = document.querySelector('.filter-btn.active')?.dataset.category || 'all';
     let filteredProducts = products;
     
     if (currentFilter !== 'all') {
         filteredProducts = products.filter(product => product.category === currentFilter);
     }
     
-    const sortedProducts = applySorting(filteredProducts, sortSelect.value);
+    const sortedProducts = applySorting(filteredProducts, sortSelect?.value || 'popular');
     renderProducts(sortedProducts);
+}
+
+function applyInitialCategoryFilter() {
+    if (!productsGrid || !filterButtons.length) return;
+
+    const selectedCategory = localStorage.getItem('selectedCategory');
+    if (!selectedCategory) return;
+
+    const selectedButton = document.querySelector(`.filter-btn[data-category="${selectedCategory}"]`);
+    localStorage.removeItem('selectedCategory');
+
+    if (!selectedButton) return;
+
+    filterButtons.forEach(button => button.classList.remove('active'));
+    selectedButton.classList.add('active');
+
+    const filteredProducts = selectedCategory === 'all'
+        ? products
+        : products.filter(product => product.category === selectedCategory);
+
+    renderProducts(applySorting(filteredProducts, sortSelect?.value || 'popular'));
 }
 
 // Применение сортировки
