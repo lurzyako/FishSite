@@ -52,7 +52,7 @@ function setupNavigation() {
             e.preventDefault();
             localStorage.removeItem('user');
             localStorage.removeItem('rememberMe');
-            window.location.href = 'index.html';
+            window.location.href = '../index.html';
         });
     }
 }
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Проверяем авторизацию
     const user = localStorage.getItem('user');
     if (!user) {
-        window.location.href = 'index.html';
+        window.location.href = '../index.html';
         return;
     }
     

@@ -30,7 +30,7 @@
                 </nav>
                 
                 <div class="header-actions">
-                    <a href="cart.html" class="cart-icon">
+                    <a href="catalog.html" class="cart-icon">
                         <i class="fas fa-shopping-cart"></i>
                         <span class="cart-count">0</span>
                     </a>
@@ -63,8 +63,19 @@
     </header>
 
     <!-- Личный кабинет -->
-    <section class="account-section">
+    <section class="account-section account-page">
         <div class="container">
+            <div class="account-page-hero">
+                <div>
+                    <span class="hero-kicker">Private client area</span>
+                    <h1 class="section-title">Личный кабинет</h1>
+                    <p>Управляйте заказами, избранными позициями и персональными подборками в одном спокойном пространстве.</p>
+                </div>
+                <a href="catalog.html" class="btn btn-primary">
+                    <i class="fas fa-bag-shopping"></i>
+                    Продолжить покупки
+                </a>
+            </div>
             <div class="account-container">
                 <!-- Боковое меню -->
                 <div class="account-sidebar">
@@ -86,15 +97,25 @@
                             <span>Настройки</span>
                         </a>
                     </div>
+                    <div class="account-concierge-card">
+                        <span>Concierge support</span>
+                        <h3>Нужна персональная подборка?</h3>
+                        <p>Соберем заказ под ужин, подарок или ресторанную закупку.</p>
+                        <a href="../index.html#contacts" class="btn btn-secondary">Связаться</a>
+                    </div>
                 </div>
 
                 <!-- Основное содержимое -->
                 <div class="account-content">
                     <div class="account-header">
-                        <h2>Личный кабинет</h2>
-                        <a href="catalog.html" class="btn btn-primary">
-                            <i class="fas fa-shopping-cart"></i> Продолжить покупки
-                        </a>
+                        <div>
+                            <span>Profile overview</span>
+                            <h2>Ваш seafood profile</h2>
+                        </div>
+                        <div class="account-header-badge">
+                            <i class="fas fa-snowflake"></i>
+                            <span>0-2°C service</span>
+                        </div>
                     </div>
 
                     <!-- Профиль пользователя -->
@@ -103,9 +124,13 @@
                             ОИ
                         </div>
                         <div class="profile-info">
+                            <span>Private client</span>
                             <h3 id="profile-name">Ольга Ивановна</h3>
                             <p id="profile-email">olga@example.com</p>
-                            <p>Клиент с 2023 года</p>
+                            <div class="profile-tags" aria-label="Статус клиента">
+                                <span>Клиент с 2023 года</span>
+                                <span>Персональные подборки</span>
+                            </div>
                         </div>
                     </div>
 
@@ -115,32 +140,39 @@
                             <i class="fas fa-box-open"></i>
                             <h3>Всего заказов</h3>
                             <span class="stat-number" id="total-orders">12</span>
+                            <p>история покупок</p>
                         </div>
                         <div class="stat-card">
                             <i class="fas fa-heart"></i>
                             <h3>В избранном</h3>
                             <span class="stat-number" id="total-favorites">8</span>
+                            <p>сохраненные позиции</p>
                         </div>
                         <div class="stat-card">
                             <i class="fas fa-star"></i>
                             <h3>Сумма заказов</h3>
-                            <span class="stat-number" id="total-spent">28 500</span> руб.
+                            <span><span class="stat-number" id="total-spent">28 500</span> руб.</span>
+                            <p>за весь период</p>
                         </div>
                         <div class="stat-card">
                             <i class="fas fa-truck"></i>
                             <h3>Доставок</h3>
                             <span class="stat-number" id="total-deliveries">10</span>
+                            <p>завершено успешно</p>
                         </div>
                     </div>
 
                     <!-- Последние заказы -->
-                    <div class="account-section">
-                        <h3>Последние заказы</h3>
+                    <div class="account-orders-panel">
+                        <div class="account-orders-head">
+                            <div>
+                                <span>Recent activity</span>
+                                <h3>Последние заказы</h3>
+                            </div>
+                            <a href="orders.html" class="btn btn-outline">Все заказы</a>
+                        </div>
                         <div class="orders-preview" id="recent-orders">
                             <!-- Загрузятся через JavaScript -->
-                        </div>
-                        <div class="text-center" style="margin-top: 20px;">
-                            <a href="orders.html" class="btn btn-outline">Все заказы</a>
                         </div>
                     </div>
                 </div>

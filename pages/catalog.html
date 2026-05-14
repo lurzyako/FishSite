@@ -65,54 +65,81 @@
     <main>
         <section id="catalog" class="catalog catalog-page">
             <div class="container">
-                <div class="catalog-page-header">
-                    <span class="hero-kicker">Full seafood catalog</span>
-                    <h1 class="section-title">Каталог продукции</h1>
-                    <p>Полный ассортимент охлажденной и замороженной рыбы, морепродуктов, филе и деликатесных позиций с удобной фильтрацией.</p>
-                    <div class="catalog-proof-row" aria-label="Преимущества каталога">
-                        <span><strong>12</strong> позиций</span>
-                        <span><strong>0-2°C</strong> охлаждение</span>
-                        <span><strong>Chef</strong> подбор</span>
+                <div class="catalog-hero">
+                    <div class="catalog-page-header">
+                        <span class="hero-kicker">Full seafood catalog</span>
+                        <h1 class="section-title">Каталог продукции</h1>
+                        <p>Премиальная подборка рыбы и морепродуктов для домашнего ужина, камерного мероприятия или регулярной ресторанной поставки.</p>
+                        <div class="catalog-proof-row" aria-label="Преимущества каталога">
+                            <span><strong>12</strong> позиций</span>
+                            <span><strong>0-2°C</strong> охлаждение</span>
+                            <span><strong>Chef</strong> подбор</span>
+                        </div>
                     </div>
+                    <aside class="catalog-service-panel" aria-label="Сервис каталога">
+                        <span>Private seafood desk</span>
+                        <h2>Выберите продукт, а детали мы доведем до идеала.</h2>
+                        <div class="catalog-service-list">
+                            <div>
+                                <i class="fas fa-temperature-low"></i>
+                                <p>Контроль холодовой цепи до передачи заказа.</p>
+                            </div>
+                            <div>
+                                <i class="fas fa-utensils"></i>
+                                <p>Подбор под ужин, ресторанную карту или подарок.</p>
+                            </div>
+                            <div>
+                                <i class="fas fa-truck-fast"></i>
+                                <p>Согласование временного окна и упаковки.</p>
+                            </div>
+                        </div>
+                    </aside>
                 </div>
 
-                <div class="catalog-quick-filters" aria-label="Быстрые подборки">
-                    <button class="filter-btn quick-filter" data-category="premium">
-                        <i class="fas fa-crown"></i> Премиум
-                    </button>
-                    <button class="filter-btn quick-filter" data-category="restaurant">
-                        <i class="fas fa-utensils"></i> Для ресторана
-                    </button>
-                    <button class="filter-btn quick-filter" data-category="fresh-catch">
-                        <i class="fas fa-water"></i> Свежий улов
-                    </button>
-                </div>
+                <div class="catalog-workspace">
+                    <div class="catalog-quick-filters" aria-label="Быстрые подборки">
+                        <button class="filter-btn quick-filter" data-category="premium">
+                            <i class="fas fa-crown"></i> Премиум
+                        </button>
+                        <button class="filter-btn quick-filter" data-category="restaurant">
+                            <i class="fas fa-utensils"></i> Для ресторана
+                        </button>
+                        <button class="filter-btn quick-filter" data-category="fresh-catch">
+                            <i class="fas fa-water"></i> Свежий улов
+                        </button>
+                    </div>
 
-                <div class="catalog-controls">
-                    <div class="filter-section">
-                        <h3>Категории</h3>
-                        <div class="category-filters">
-                            <button class="filter-btn active" data-category="all">Все товары</button>
-                            <button class="filter-btn" data-category="fresh">Охлажденная рыба</button>
-                            <button class="filter-btn" data-category="frozen">Замороженная рыба</button>
-                            <button class="filter-btn" data-category="seafood">Морепродукты</button>
-                            <button class="filter-btn" data-category="fillets">Филе и стейки</button>
+                    <div class="catalog-controls">
+                        <div class="filter-section">
+                            <h3>Категории</h3>
+                            <div class="category-filters">
+                                <button class="filter-btn active" data-category="all">Все товары</button>
+                                <button class="filter-btn" data-category="fresh">Охлажденная рыба</button>
+                                <button class="filter-btn" data-category="frozen">Замороженная рыба</button>
+                                <button class="filter-btn" data-category="seafood">Морепродукты</button>
+                                <button class="filter-btn" data-category="fillets">Филе и стейки</button>
+                            </div>
+                        </div>
+
+                        <div class="sort-section">
+                            <label for="sort">Сортировать по:</label>
+                            <select id="sort">
+                                <option value="popular">Популярности</option>
+                                <option value="price-asc">Цене (по возрастанию)</option>
+                                <option value="price-desc">Цене (по убыванию)</option>
+                                <option value="name">Названию</option>
+                            </select>
                         </div>
                     </div>
 
-                    <div class="sort-section">
-                        <label for="sort">Сортировать по:</label>
-                        <select id="sort">
-                            <option value="popular">Популярности</option>
-                            <option value="price-asc">Цене (по возрастанию)</option>
-                            <option value="price-desc">Цене (по убыванию)</option>
-                            <option value="name">Названию</option>
-                        </select>
+                    <div class="catalog-results-head">
+                        <span>Seafood selection</span>
+                        <p>Карточки открываются в подробный просмотр, а избранное сохраняется в личном кабинете.</p>
                     </div>
-                </div>
 
-                <div class="products-grid">
-                    <!-- Товары будут добавляться динамически через JavaScript -->
+                    <div class="products-grid">
+                        <!-- Товары будут добавляться динамически через JavaScript -->
+                    </div>
                 </div>
             </div>
         </section>
@@ -146,7 +173,7 @@
                         <li><a href="account.html">Личный кабинет</a></li>
                         <li><a href="orders.html">Мои заказы</a></li>
                         <li><a href="favorites.html">Избранное</a></li>
-                        <li><a href="index.html#delivery">Доставка и оплата</a></li>
+                        <li><a href="../index.html#delivery">Доставка и оплата</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
