@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Рыба и морепродукты | ИП Чепурнова О.И.</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="luxury.css">
+    <link rel="stylesheet" href="css/luxury.css">
 </head>
 <body>
     <!-- Шапка сайта -->
@@ -22,7 +22,7 @@
                 
                 <nav class="nav">
                     <ul class="nav-list">
-                        <li><a href="catalog.html">Каталог</a></li>
+                        <li><a href="pages/catalog.html">Каталог</a></li>
                         <li><a href="#about">О компании</a></li>
                         <li><a href="#delivery">Доставка</a></li>
                         <li><a href="#contacts">Контакты</a></li>
@@ -50,9 +50,9 @@
                                 <p id="user-email">olga@example.com</p>
                             </div>
                             <div class="user-links">
-                                <a href="account.html"><i class="fas fa-user"></i> Личный кабинет</a>
-                                <a href="orders.html"><i class="fas fa-box"></i> Мои заказы</a>
-                                <a href="favorites.html"><i class="fas fa-heart"></i> Избранное <span class="favorites-count">(0)</span></a>
+                                <a href="pages/account.html"><i class="fas fa-user"></i> Личный кабинет</a>
+                                <a href="pages/orders.html"><i class="fas fa-box"></i> Мои заказы</a>
+                                <a href="pages/favorites.html"><i class="fas fa-heart"></i> Избранное <span class="favorites-count">(0)</span></a>
                                 <a href="#" class="logout" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Выйти</a>
                             </div>
                         </div>
@@ -84,7 +84,7 @@
                     <h2>Морская гастрономия без компромиссов.</h2>
                     <p>Отборная рыба и морепродукты для частных ужинов, семейных заказов и ресторанной кухни с прозрачным происхождением и холодной логистикой.</p>
                     <div class="hero-actions">
-                        <a href="catalog.html" class="btn btn-primary">Перейти в каталог</a>
+                        <a href="pages/catalog.html" class="btn btn-primary">Перейти в каталог</a>
                         <a href="#delivery" class="btn btn-secondary">Условия доставки</a>
                     </div>
                     <div class="hero-proof-strip" aria-label="Ключевые преимущества сервиса">
@@ -130,7 +130,7 @@
             <div class="advantages-editorial">
                 <figure class="advantages-editorial-media">
                     <span class="advantages-fish-shell">
-                        <img src="assets/advantages-fish-photo.png" alt="Свежая рыба на льду премиального качества">
+                        <img src="assets/images/advantages-fish-photo.png" alt="Свежая рыба на льду премиального качества">
                     </span>
                 </figure>
                 <div class="advantages-editorial-content">
@@ -235,7 +235,7 @@
                         <h3>Избранные позиции</h3>
                         <p>Короткая премиальная подборка для первого знакомства. Полный каталог с фильтрами и сортировкой вынесен на отдельную страницу.</p>
                     </div>
-                    <a href="catalog.html" class="btn btn-primary featured-catalog-link">Открыть весь каталог</a>
+                    <a href="pages/catalog.html" class="btn btn-primary featured-catalog-link">Открыть весь каталог</a>
                 </div>
                 <div class="featured-carousel">
                     <button class="carousel-btn carousel-prev" type="button" aria-label="Предыдущие товары">
@@ -366,46 +366,69 @@
             </div>
             <div class="contacts-content">
                 <div class="contact-info">
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-phone"></i>
-                        </div>
-                        <div class="contact-details">
-                            <h3>Телефон</h3>
-                            <p>+7 (XXX) XXX-XX-XX</p>
-                        </div>
-                    </div>
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-envelope"></i>
-                        </div>
-                        <div class="contact-details">
-                            <h3>Email</h3>
-                            <p>info@example.com</p>
+                    <div class="contact-primary">
+                        <span class="contact-primary-label">Private seafood concierge</span>
+                        <h3>Персональная консультация по заказу</h3>
+                        <p>Поможем выбрать рыбу и морепродукты под сценарий: семейный ужин, подарок, ресторанную закупку или камерное мероприятие.</p>
+                        <div class="contact-actions">
+                            <a href="tel:+7XXXXXXXXXX" class="btn btn-primary">
+                                <i class="fas fa-phone"></i>
+                                Позвонить
+                            </a>
+                            <a href="mailto:info@example.com" class="btn btn-secondary">
+                                <i class="fas fa-envelope"></i>
+                                Написать
+                            </a>
                         </div>
                     </div>
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-clock"></i>
+                    <div class="contact-list" aria-label="Контактная информация">
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div class="contact-details">
+                                <span>Прямой контакт</span>
+                                <h3>Телефон</h3>
+                                <p>+7 (XXX) XXX-XX-XX</p>
+                            </div>
                         </div>
-                        <div class="contact-details">
-                            <h3>Время работы</h3>
-                            <p>Пн-Пт: 9:00 - 18:00</p>
-                            <p>Сб-Вс: 10:00 - 16:00</p>
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="contact-details">
+                                <span>Заявки и подбор</span>
+                                <h3>Email</h3>
+                                <p>info@example.com</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-map-marker-alt"></i>
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="contact-details">
+                                <span>График консультаций</span>
+                                <h3>Время работы</h3>
+                                <p>Пн-Пт: 9:00 - 18:00</p>
+                                <p>Сб-Вс: 10:00 - 16:00</p>
+                            </div>
                         </div>
-                        <div class="contact-details">
-                            <h3>Адрес</h3>
-                            <p>г. Екатеринбург, ул. Репина, д. 15</p>
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="contact-details">
+                                <span>Локальная доставка</span>
+                                <h3>Адрес</h3>
+                                <p>г. Екатеринбург, ул. Репина, д. 15</p>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="contact-form">
+                    <span class="contact-form-eyebrow">Request details</span>
                     <h3>Остались вопросы?</h3>
+                    <p class="contact-form-lead">Опишите задачу, а мы предложим подборку, формат упаковки и удобное окно доставки.</p>
                     <form id="contact-form">
                         <div class="form-group">
                             <label for="name">Ваше имя</label>
@@ -421,79 +444,118 @@
                         </div>
                         <button type="submit" class="btn btn-primary">Отправить</button>
                     </form>
+                    <div class="contact-form-note">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Ответим лично и без лишней рассылки.</span>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Карта с анимированным подводным фоном -->
+    <!-- Карта -->
     <section class="map-section">
-        <!-- Анимированные рыбы на заднем фоне -->
-        <div class="under-sea-background">
-            <div class="camera -x">
-                <div class="camera -y">
-                    <div class="camera -z">
-                        <div class="blowing-bubbles">
-                            <!-- 40 пузырьков будут сгенерированы через JavaScript -->
+        <div class="container">
+            <div class="map-layout">
+                <div class="map-copy">
+                    <span class="section-eyebrow">Location concierge</span>
+                    <h2 class="section-title">Как нас найти</h2>
+                    <p>Наш пункт выдачи и координации заказов находится в Екатеринбурге. Перед визитом лучше согласовать время, чтобы мы подготовили заказ и сохранили холодовую цепь.</p>
+                    <div class="map-contact-panel">
+                        <div class="map-contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div>
+                                <span>Адрес</span>
+                                <strong>ул. Репина, 15</strong>
+                            </div>
                         </div>
-                        <div class="swiming-fishes">
-                            <!-- 10 рыб будут сгенерированы через JavaScript -->
+                        <div class="map-contact-item">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <span>Визит</span>
+                                <strong>по согласованию</strong>
+                            </div>
+                        </div>
+                        <div class="map-contact-item">
+                            <i class="fas fa-snowflake"></i>
+                            <div>
+                                <span>Заказ</span>
+                                <strong>в термоупаковке</strong>
+                            </div>
                         </div>
                     </div>
                 </div>
+                <div class="map-card">
+                    <div class="map-card-topline">
+                        <span>Pickup point</span>
+                        <strong>Екатеринбург</strong>
+                    </div>
+                    <div id="map"></div>
+                    <div class="map-card-footer">
+                        <span>Маршрут до точки выдачи</span>
+                        <a href="https://yandex.ru/maps/?text=Екатеринбург%2C%20ул.%20Репина%2C%2015" target="_blank" rel="noopener">Открыть карту</a>
+                    </div>
+                </div>
             </div>
-        </div>
-        
-        <div class="container">
-            <h2 class="section-title">Как нас найти</h2>
-            <div id="map"></div>
         </div>
     </section>
 
     <!-- Футер -->
     <footer class="footer">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-cta">
+            <div class="footer-cta">
+                <div class="footer-cta-copy">
                     <span>Private order</span>
                     <h3>Соберем морскую подборку под ваш ужин</h3>
-                    <a href="catalog.html" class="btn btn-primary">Выбрать продукты</a>
+                    <p>Подберем позиции, уточним формат разделки и согласуем доставку в удобное окно.</p>
                 </div>
-                <div class="footer-section">
+                <div class="footer-cta-actions">
+                    <a href="pages/catalog.html" class="btn btn-primary">Выбрать продукты</a>
+                    <a href="#contacts" class="btn btn-secondary">Связаться</a>
+                </div>
+            </div>
+            <div class="footer-content">
+                <div class="footer-section footer-brand">
                     <h3>Морские Дары</h3>
                     <p>ИП Чепурнова Ольга Ивановна</p>
                     <p>Продажа и доставка охлажденной и замороженной рыбы и морепродуктов</p>
+                    <div class="footer-brand-meta">
+                        <span>Екатеринбург</span>
+                        <span>0-2°C логистика</span>
+                    </div>
                 </div>
                 <div class="footer-section">
                     <h4>Каталог</h4>
                     <ul>
-                        <li><a href="catalog.html">Охлажденная рыба</a></li>
-                        <li><a href="catalog.html">Замороженная рыба</a></li>
-                        <li><a href="catalog.html">Морепродукты</a></li>
-                        <li><a href="catalog.html">Филе и стейки</a></li>
+                        <li><a href="pages/catalog.html">Охлажденная рыба</a></li>
+                        <li><a href="pages/catalog.html">Замороженная рыба</a></li>
+                        <li><a href="pages/catalog.html">Морепродукты</a></li>
+                        <li><a href="pages/catalog.html">Филе и стейки</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h4>Покупателям</h4>
                     <ul>
-                        <li><a href="account.html">Личный кабинет</a></li>
-                        <li><a href="orders.html">Мои заказы</a></li>
-                        <li><a href="favorites.html">Избранное</a></li>
+                        <li><a href="pages/account.html">Личный кабинет</a></li>
+                        <li><a href="pages/orders.html">Мои заказы</a></li>
+                        <li><a href="pages/favorites.html">Избранное</a></li>
                         <li><a href="#delivery">Доставка и оплата</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h4>Свяжитесь с нами</h4>
+                    <p>Ответим на вопросы по наличию, доставке и подбору продуктов.</p>
                     <div class="social-links">
-                        <a href="#"><i class="fab fa-vk"></i></a>
-                        <a href="#"><i class="fab fa-telegram"></i></a>
-                        <a href="#"><i class="fab fa-whatsapp"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="VK"><i class="fab fa-vk"></i></a>
+                        <a href="#" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+                        <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                     </div>
                 </div>
             </div>
             <div class="footer-bottom">
                 <p>&copy; 2026 ИП Чепурнова О.И. Все права защищены.</p>
+                <span>Premium seafood delivery service</span>
             </div>
         </div>
     </footer>
@@ -622,7 +684,7 @@
 
     <!-- Яндекс Карты -->
     <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
-    <script src="script.js"></script>
-    <script src="luxury.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/luxury.js"></script>
 </body>
 </html>
