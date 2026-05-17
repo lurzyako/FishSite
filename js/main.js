@@ -382,6 +382,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateCartCount();
     checkAuth();
     updateFavoritesCount();
+    initConsultantChat();
 });
 
 // Инициализация обработчиков событий
@@ -489,6 +490,151 @@ function initEventListeners() {
             closeProductModalWindow();
         }
     });
+}
+
+function initConsultantChat() {
+    if (document.querySelector('.consultant-chat-widget')) return;
+
+    const widget = document.createElement('div');
+    widget.className = 'consultant-chat-widget';
+    widget.innerHTML = `
+        <div class="consultant-chat-popover" role="button" tabindex="0" aria-label="Открыть чат с консультантом">
+            <button class="consultant-popover-close" type="button" aria-label="Скрыть уведомление">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="consultant-avatar" aria-hidden="true">
+                <i class="fas fa-headset"></i>
+            </div>
+            <div class="consultant-popover-copy">
+                <span>Консультант онлайн</span>
+                <strong>Помочь с выбором?</strong>
+                <p>Подберем рыбу, упаковку и удобное окно доставки.</p>
+            </div>
+        </div>
+
+        <section class="consultant-chat-panel" aria-label="Чат с консультантом" aria-hidden="true">
+            <header class="consultant-chat-header">
+                <div class="consultant-avatar" aria-hidden="true">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <div>
+                    <span>Private seafood concierge</span>
+                    <strong>Консультант Морские Дары</strong>
+                </div>
+                <button class="consultant-chat-close" type="button" aria-label="Закрыть чат">
+                    <i class="fas fa-times"></i>
+                </button>
+            </header>
+            <div class="consultant-chat-body">
+                <div class="consultant-message consultant-message-bot">
+                    Добрый день. Подскажу по свежести, разделке, доставке и подборке под ужин.
+                </div>
+                <div class="consultant-quick-actions" aria-label="Быстрые вопросы">
+                    <button type="button" data-message="Помогите подобрать рыбу на ужин">Подбор на ужин</button>
+                    <button type="button" data-message="Какая доставка доступна сегодня?">Доставка сегодня</button>
+                    <button type="button" data-message="Нужна подборка для ресторана">Для ресторана</button>
+                </div>
+            </div>
+            <form class="consultant-chat-form">
+                <label class="sr-only" for="consultant-message">Сообщение консультанту</label>
+                <input id="consultant-message" type="text" placeholder="Напишите вопрос..." autocomplete="off">
+                <button type="submit" aria-label="Отправить сообщение">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </section>
+
+        <button class="consultant-chat-trigger" type="button" aria-label="Открыть чат с консультантом">
+            <i class="fas fa-comments"></i>
+            <span class="consultant-chat-dot" aria-hidden="true"></span>
+        </button>
+    `;
+
+    document.body.appendChild(widget);
+
+    const popover = widget.querySelector('.consultant-chat-popover');
+    const popoverClose = widget.querySelector('.consultant-popover-close');
+    const panel = widget.querySelector('.consultant-chat-panel');
+    const trigger = widget.querySelector('.consultant-chat-trigger');
+    const closeButton = widget.querySelector('.consultant-chat-close');
+    const form = widget.querySelector('.consultant-chat-form');
+    const input = widget.querySelector('#consultant-message');
+    const body = widget.querySelector('.consultant-chat-body');
+    const quickButtons = widget.querySelectorAll('.consultant-quick-actions button');
+
+    const openChat = () => {
+        widget.classList.add('chat-open');
+        widget.classList.remove('chat-popover-visible');
+        panel.setAttribute('aria-hidden', 'false');
+        window.setTimeout(() => input?.focus(), 120);
+    };
+
+    const closeChat = () => {
+        widget.classList.remove('chat-open');
+        panel.setAttribute('aria-hidden', 'true');
+        trigger?.focus();
+    };
+
+    const hidePopover = () => {
+        widget.classList.remove('chat-popover-visible');
+        sessionStorage.setItem('consultantChatPopoverClosed', 'true');
+    };
+
+    const addMessage = (message, type = 'user') => {
+        const messageElement = document.createElement('div');
+        messageElement.className = `consultant-message consultant-message-${type}`;
+        messageElement.textContent = message;
+        body.appendChild(messageElement);
+        body.scrollTop = body.scrollHeight;
+    };
+
+    const addBotReply = () => {
+        window.setTimeout(() => {
+            addMessage('Приняли запрос. Консультант уточнит наличие, формат разделки и удобное время доставки. Для быстрой связи оставьте телефон или нажмите "Позвонить" в контактах.', 'bot');
+        }, 560);
+    };
+
+    const sendMessage = (message) => {
+        const cleanMessage = message.trim();
+        if (!cleanMessage) return;
+
+        addMessage(cleanMessage, 'user');
+        input.value = '';
+        addBotReply();
+    };
+
+    trigger?.addEventListener('click', openChat);
+    closeButton?.addEventListener('click', closeChat);
+
+    popover?.addEventListener('click', openChat);
+    popover?.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openChat();
+        }
+    });
+
+    popoverClose?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        hidePopover();
+    });
+
+    form?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        sendMessage(input.value);
+    });
+
+    quickButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            sendMessage(button.dataset.message || button.textContent);
+        });
+    });
+
+    window.setTimeout(() => {
+        if (!sessionStorage.getItem('consultantChatPopoverClosed') && !widget.classList.contains('chat-open')) {
+            widget.classList.add('chat-popover-visible');
+        }
+    }, 1800);
 }
 
 function getFeaturedProducts() {
@@ -1055,15 +1201,17 @@ function handleAuthSubmit(e) {
     const email = document.getElementById('auth-email').value;
     const password = document.getElementById('auth-password').value;
     const rememberMe = document.getElementById('remember-me').checked;
+    const isAdminEmail = email.trim().toLowerCase() === 'admin@fishsite.local';
     
     // Здесь должна быть реальная логика авторизации
     // Для примера используем простую проверку
     if (email && password) {
         // Симуляция успешной авторизации
         const userData = {
-            name: "Ольга Ивановна",
+            name: isAdminEmail ? "Администратор" : "Ольга Ивановна",
             email: email,
-            initials: email.substring(0, 2).toUpperCase()
+            initials: isAdminEmail ? "АД" : email.substring(0, 2).toUpperCase(),
+            role: isAdminEmail ? "admin" : "customer"
         };
         
         // Сохраняем данные пользователя
@@ -1152,10 +1300,31 @@ function updateUserInterface(userData) {
         document.getElementById('user-name').textContent = userData.name;
         document.getElementById('user-email').textContent = userData.email;
         document.getElementById('user-avatar').textContent = userData.initials;
+        updateAdminNavigation(userData);
     } else {
         // Пользователь не авторизован
         loginBtn.style.display = 'block';
         userMenu.style.display = 'none';
+        updateAdminNavigation(null);
+    }
+}
+
+function updateAdminNavigation(userData) {
+    const userLinks = document.querySelector('.user-links');
+    if (!userLinks) return;
+
+    let adminLink = userLinks.querySelector('.admin-dashboard-link');
+
+    if (userData?.role === 'admin') {
+        if (!adminLink) {
+            adminLink = document.createElement('a');
+            adminLink.href = window.location.pathname.includes('/pages/') ? 'admin.html' : 'pages/admin.html';
+            adminLink.className = 'admin-dashboard-link';
+            adminLink.innerHTML = '<i class="fas fa-chart-line"></i> CRM админа';
+            userLinks.insertBefore(adminLink, userLinks.firstChild);
+        }
+    } else if (adminLink) {
+        adminLink.remove();
     }
 }
 
@@ -1302,7 +1471,8 @@ function showRegistrationModal() {
             const userData = {
                 name: name,
                 email: email,
-                initials: name.substring(0, 2).toUpperCase()
+                initials: name.substring(0, 2).toUpperCase(),
+                role: 'customer'
             };
             
             localStorage.setItem('user', JSON.stringify(userData));

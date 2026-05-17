@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/luxury.css">
 </head>
-<body>
+<body class="account-shell">
     <!-- Шапка (такая же как в index.html) -->
     <header class="header">
         <div class="container">
@@ -64,7 +64,7 @@
     </header>
 
     <!-- Личный кабинет - Избранное -->
-    <section class="account-section">
+    <section class="account-section account-page favorites-page">
         <div class="container">
             <div class="account-container">
                 <!-- Боковое меню -->
@@ -82,17 +82,17 @@
                             <i class="fas fa-heart"></i>
                             <span>Избранное</span>
                         </a>
-                        <a href="#" class="account-menu-item">
-                            <i class="fas fa-cog"></i>
-                            <span>Настройки</span>
-                        </a>
                     </div>
                 </div>
 
                 <!-- Основное содержимое -->
                 <div class="account-content">
                     <div class="account-header">
-                        <h2>Избранное</h2>
+                        <div>
+                            <span>Saved selection</span>
+                            <h2>Избранное</h2>
+                            <p>Сохраняйте удачные позиции, быстро возвращайтесь к подборкам и оформляйте повторный заказ без лишнего поиска.</p>
+                        </div>
                         <a href="catalog.html" class="btn btn-primary">
                             <i class="fas fa-fish"></i> В каталог
                         </a>

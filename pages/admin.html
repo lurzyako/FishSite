@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM администратора | Морские Дары</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/orders.css">
+    <link rel="stylesheet" href="../css/luxury.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>Морские Дары</h1>
+                    <p>CRM администратора</p>
+                </div>
+
+                <nav class="nav">
+                    <ul class="nav-list">
+                        <li><a href="admin.html" class="active">CRM</a></li>
+                        <li><a href="orders.html">Заказы</a></li>
+                        <li><a href="catalog.html">Каталог</a></li>
+                        <li><a href="../index.html#contacts">Контакты</a></li>
+                    </ul>
+                </nav>
+
+                <div class="header-actions">
+                    <a href="account.html" class="cart-icon" aria-label="Личный кабинет">
+                        <i class="fas fa-user-shield"></i>
+                    </a>
+                    <div class="user-menu" id="user-menu">
+                        <div class="user-avatar" id="user-avatar">АД</div>
+                        <div class="user-dropdown" id="user-dropdown">
+                            <div class="user-info">
+                                <h4 id="user-name">Администратор</h4>
+                                <p id="user-email">admin@fishsite.local</p>
+                            </div>
+                            <div class="user-links">
+                                <a href="admin.html"><i class="fas fa-chart-line"></i> CRM админа</a>
+                                <a href="orders.html"><i class="fas fa-box"></i> Заказы</a>
+                                <a href="account.html"><i class="fas fa-user"></i> Личный кабинет</a>
+                                <a href="#" class="logout" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="mobile-menu-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="admin-crm-page">
+        <section class="account-section account-page">
+            <div class="container">
+                <div class="account-page-hero admin-crm-hero">
+                    <div>
+                        <span class="hero-kicker">Internal CRM</span>
+                        <h1 class="section-title">CRM администратора</h1>
+                        <p>Закрытая панель для контроля заказов, клиентов, заявок и оценок сервиса.</p>
+                    </div>
+                    <div class="admin-guard-badge">
+                        <i class="fas fa-lock"></i>
+                        <span>Доступ только для роли admin</span>
+                    </div>
+                </div>
+
+                <div class="admin-crm-grid">
+                    <aside class="admin-crm-sidebar">
+                        <button class="admin-nav-btn active" data-admin-view="overview">
+                            <i class="fas fa-chart-pie"></i>
+                            Обзор
+                        </button>
+                        <button class="admin-nav-btn" data-admin-view="orders">
+                            <i class="fas fa-box"></i>
+                            Заказы
+                        </button>
+                        <button class="admin-nav-btn" data-admin-view="clients">
+                            <i class="fas fa-users"></i>
+                            Клиенты
+                        </button>
+                        <button class="admin-nav-btn" data-admin-view="ratings">
+                            <i class="fas fa-star"></i>
+                            Оценки
+                        </button>
+                    </aside>
+
+                    <section class="admin-crm-content">
+                        <div class="admin-view active" id="admin-view-overview">
+                            <div class="admin-metrics" id="adminMetrics"></div>
+                            <div class="admin-two-column">
+                                <div class="admin-panel">
+                                    <div class="admin-panel-head">
+                                        <span>Pipeline</span>
+                                        <h2>Заказы в работе</h2>
+                                    </div>
+                                    <div class="admin-pipeline" id="adminPipeline"></div>
+                                </div>
+                                <div class="admin-panel">
+                                    <div class="admin-panel-head">
+                                        <span>Feedback</span>
+                                        <h2>Последние оценки</h2>
+                                    </div>
+                                    <div class="admin-rating-feed" id="adminRatingFeed"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="admin-view" id="admin-view-orders">
+                            <div class="admin-panel">
+                                <div class="admin-panel-head admin-panel-head-row">
+                                    <div>
+                                        <span>Order control</span>
+                                        <h2>Управление заказами</h2>
+                                    </div>
+                                    <input type="search" id="adminOrderSearch" placeholder="Поиск по заказу или клиенту">
+                                </div>
+                                <div class="admin-table-wrap">
+                                    <table class="orders-table admin-crm-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Заказ</th>
+                                                <th>Клиент</th>
+                                                <th>Сумма</th>
+                                                <th>Статус</th>
+                                                <th>Оценка</th>
+                                                <th>Действие</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="adminOrdersBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="admin-view" id="admin-view-clients">
+                            <div class="admin-panel">
+                                <div class="admin-panel-head">
+                                    <span>Client base</span>
+                                    <h2>Клиентская база</h2>
+                                </div>
+                                <div class="admin-client-list" id="adminClientList"></div>
+                            </div>
+                        </div>
+
+                        <div class="admin-view" id="admin-view-ratings">
+                            <div class="admin-panel">
+                                <div class="admin-panel-head">
+                                    <span>Service quality</span>
+                                    <h2>Оценки заказов</h2>
+                                </div>
+                                <div class="admin-rating-list" id="adminRatingList"></div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/admin.js"></script>
+    <script src="../js/luxury.js"></script>
+</body>
+</html>

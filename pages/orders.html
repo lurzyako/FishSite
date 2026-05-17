@@ -8,10 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../css/orders.css">
     <link rel="stylesheet" href="../css/luxury.css">
+    <link rel="stylesheet" href="../css/orders.css">
 </head>
-<body>
+<body class="account-shell">
     <!-- Шапка -->
     <header class="header">
         <div class="container">
@@ -36,8 +36,7 @@
                         <span class="cart-count">0</span>
                     </div>
                     
-                    <!-- Переключатель режима -->
-                    <div class="mode-switcher" id="modeSwitcher">
+                    <div class="mode-switcher" id="modeSwitcher" hidden>
                         <button class="btn btn-outline btn-sm" id="toggleModeBtn">
                             <i class="fas fa-user-shield"></i> Админский режим
                         </button>
@@ -73,7 +72,7 @@
     </header>
 
     <!-- Личный кабинет - Заказы -->
-    <section class="account-section">
+    <section class="account-section account-page orders-page">
         <div class="container">
             <div class="account-container">
                 <!-- Боковое меню -->
@@ -91,17 +90,17 @@
                             <i class="fas fa-heart"></i>
                             <span>Избранное</span>
                         </a>
-                        <a href="#" class="account-menu-item">
-                            <i class="fas fa-cog"></i>
-                            <span>Настройки</span>
-                        </a>
                     </div>
                 </div>
 
                 <!-- Основное содержимое -->
                 <div class="account-content">
                     <div class="account-header">
-                        <h2>Мои заказы</h2>
+                        <div>
+                            <span>Order history</span>
+                            <h2>Мои заказы</h2>
+                            <p>Следите за статусом доставки, повторяйте удачные подборки и обращайтесь в поддержку по конкретному заказу.</p>
+                        </div>
                         <div class="header-actions-group">
                             <a href="catalog.html" class="btn btn-primary">
                                 <i class="fas fa-shopping-cart"></i> Сделать новый заказ

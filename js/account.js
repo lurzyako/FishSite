@@ -3,7 +3,8 @@ function loadUserData() {
     const userData = JSON.parse(localStorage.getItem('user')) || {
         name: "Ольга Ивановна",
         email: "olga@example.com",
-        initials: "ОИ"
+        initials: "ОИ",
+        role: "customer"
     };
     
     // Обновляем данные на всех страницах
@@ -14,8 +15,32 @@ function loadUserData() {
     userNameElements.forEach(el => el.textContent = userData.name);
     userEmailElements.forEach(el => el.textContent = userData.email);
     userAvatarElements.forEach(el => el.textContent = userData.initials);
+    updateAdminAccountLinks(userData);
     
     return userData;
+}
+
+function updateAdminAccountLinks(userData) {
+    const userLinks = document.querySelector('.user-links');
+    const accountMenu = document.querySelector('.account-menu');
+
+    if (userData.role !== 'admin') return;
+
+    if (userLinks && !userLinks.querySelector('.admin-dashboard-link')) {
+        const adminLink = document.createElement('a');
+        adminLink.href = 'admin.html';
+        adminLink.className = 'admin-dashboard-link';
+        adminLink.innerHTML = '<i class="fas fa-chart-line"></i> CRM админа';
+        userLinks.insertBefore(adminLink, userLinks.firstChild);
+    }
+
+    if (accountMenu && !accountMenu.querySelector('.admin-dashboard-link')) {
+        const adminMenuLink = document.createElement('a');
+        adminMenuLink.href = 'admin.html';
+        adminMenuLink.className = 'account-menu-item admin-dashboard-link';
+        adminMenuLink.innerHTML = '<i class="fas fa-chart-line"></i><span>CRM админа</span>';
+        accountMenu.appendChild(adminMenuLink);
+    }
 }
 
 function setupNavigation() {

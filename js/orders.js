@@ -285,6 +285,8 @@ const adminOrdersData = [
 
 // Переменные для режимов
 let isAdminMode = false;
+const RATING_STORAGE_KEY = 'orderRatings';
+let orderRatings = JSON.parse(localStorage.getItem(RATING_STORAGE_KEY) || '{}');
 
 // Переменные для пагинации
 let currentPage = 1;
@@ -322,6 +324,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Инициализируем кнопку переключения режима
     initModeSwitcher();
+    initOrderSupportChat();
     
     // Обработчики фильтров
     filterTabs.forEach(tab => {
@@ -362,11 +365,23 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Обработчик повторения заказа
     repeatOrderBtn.addEventListener('click', repeatCurrentOrder);
+
+    initOrderRatingModal();
 });
 
 // Инициализация переключателя режима
 function initModeSwitcher() {
-    // Сначала показываем кнопку переключения (для всех пользователей)
+    const userData = JSON.parse(localStorage.getItem('user') || 'null');
+    const isAdmin = userData?.role === 'admin';
+
+    if (!isAdmin) {
+        if (modeSwitcher) modeSwitcher.style.display = 'none';
+        if (modePanel) modePanel.style.display = 'none';
+        if (adminFilters) adminFilters.style.display = 'none';
+        if (adminOrdersTable) adminOrdersTable.style.display = 'none';
+        return;
+    }
+
     if (toggleModeBtn) {
         toggleModeBtn.innerHTML = '<i class="fas fa-user-shield"></i> Админский режим';
         toggleModeBtn.style.display = 'block';
@@ -479,18 +494,45 @@ function loadUserData() {
     const userData = JSON.parse(localStorage.getItem('user')) || {
         name: "Ольга Ивановна",
         email: "olga@example.com",
-        initials: "ОИ"
+        initials: "ОИ",
+        role: "customer"
     };
     
     const userNameElements = document.querySelectorAll('#user-name, #profile-name');
     const userEmailElements = document.querySelectorAll('#user-email, #profile-email');
     const userAvatarElements = document.querySelectorAll('#user-avatar, #profile-avatar');
+    const userRoleElements = document.querySelectorAll('#user-role');
     
     userNameElements.forEach(el => el.textContent = userData.name);
     userEmailElements.forEach(el => el.textContent = userData.email);
     userAvatarElements.forEach(el => el.textContent = userData.initials);
+    userRoleElements.forEach(el => el.textContent = userData.role === 'admin' ? 'Администратор' : 'Клиент');
+    updateAdminOrdersLinks(userData);
     
     return userData;
+}
+
+function updateAdminOrdersLinks(userData) {
+    const userLinks = document.querySelector('.user-links');
+    const accountMenu = document.querySelector('.account-menu');
+
+    if (userData.role !== 'admin') return;
+
+    if (userLinks && !userLinks.querySelector('.admin-dashboard-link')) {
+        const adminLink = document.createElement('a');
+        adminLink.href = 'admin.html';
+        adminLink.className = 'admin-dashboard-link';
+        adminLink.innerHTML = '<i class="fas fa-chart-line"></i> CRM админа';
+        userLinks.insertBefore(adminLink, userLinks.firstChild);
+    }
+
+    if (accountMenu && !accountMenu.querySelector('.admin-dashboard-link')) {
+        const adminMenuLink = document.createElement('a');
+        adminMenuLink.href = 'admin.html';
+        adminMenuLink.className = 'account-menu-item admin-dashboard-link';
+        adminMenuLink.innerHTML = '<i class="fas fa-chart-line"></i><span>CRM админа</span>';
+        accountMenu.appendChild(adminMenuLink);
+    }
 }
 
 function setupNavigation() {
@@ -526,7 +568,7 @@ function setupNavigation() {
             e.preventDefault();
             localStorage.removeItem('user');
             localStorage.removeItem('rememberMe');
-            window.location.href = 'index.html';
+            window.location.href = '../index.html';
         });
     }
 }
@@ -607,55 +649,62 @@ function createOrderCard(order) {
         year: 'numeric'
     });
     
+    const shownProducts = order.products.slice(0, 3);
+    const extraProductsCount = order.products.length - shownProducts.length;
+
     orderCard.innerHTML = `
-        <div class="order-header">
-            <div>
-                <div class="order-id">Заказ #${order.id}</div>
-                <div class="order-date">${formattedDate}</div>
+        <div class="order-card-main">
+            <div class="order-header">
+                <div>
+                    <span class="order-card-label">Заказ</span>
+                    <div class="order-id">#${order.id}</div>
+                    <div class="order-date">${formattedDate} · доставка ${order.deliveryTime}</div>
+                </div>
+                <div class="order-status status-${order.status}">${getStatusText(order.status)}</div>
             </div>
-            <div class="order-status status-${order.status}">${getStatusText(order.status)}</div>
-        </div>
-        
-        <div class="order-products">
-            ${order.products.slice(0, 3).map(product => `
-                <div class="product-item">
-                    <div class="product-icon">${product.image}</div>
-                    <div class="product-info">
-                        <div class="product-name">${product.name}</div>
-                        <div class="product-meta">
-                            <span>${product.quantity} ${product.unit}</span>
-                            <span>${product.price} руб./${product.unit === 'шт' ? 'шт' : 'кг'}</span>
+
+            <div class="order-card-body">
+                <div class="order-products">
+                    ${shownProducts.map(product => `
+                        <div class="product-item">
+                            <div class="product-icon">${product.image}</div>
+                            <div class="product-info">
+                                <div class="product-name">${product.name}</div>
+                                <div class="product-meta">
+                                    <span>${product.quantity} ${product.unit}</span>
+                                    <span>${product.price} руб./${product.unit === 'шт' ? 'шт' : 'кг'}</span>
+                                </div>
+                            </div>
+                            <div class="product-price">${product.total} руб.</div>
+                        </div>
+                    `).join('')}
+                    ${extraProductsCount > 0 ? `
+                        <div class="product-item order-products-more">
+                            <span>+ еще ${extraProductsCount} товаров</span>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <aside class="order-side-panel">
+                    <div class="order-total">
+                        <div class="total-label">Итого</div>
+                        <div class="total-amount">${order.total.toLocaleString()} руб.</div>
+                    </div>
+                    <div class="order-details">
+                        <div class="detail-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>${order.address}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-credit-card"></i>
+                            <span>${order.paymentMethod}</span>
                         </div>
                     </div>
-                    <div class="product-price">${product.total} руб.</div>
-                </div>
-            `).join('')}
-            ${order.products.length > 3 ? `
-                <div class="product-item" style="justify-content: center; background: transparent;">
-                    <span style="color: var(--text-light);">+ еще ${order.products.length - 3} товаров</span>
-                </div>
-            ` : ''}
-        </div>
-        
-        <div class="order-details">
-            <div class="detail-item">
-                <i class="fas fa-map-marker-alt"></i>
-                <span>${order.address}</span>
-            </div>
-            <div class="detail-item">
-                <i class="fas fa-clock"></i>
-                <span>${order.deliveryTime}</span>
-            </div>
-            <div class="detail-item">
-                <i class="fas fa-credit-card"></i>
-                <span>${order.paymentMethod}</span>
+                </aside>
             </div>
         </div>
-        
-        <div class="order-total">
-            <div class="total-label">Итого к оплате</div>
-            <div class="total-amount">${order.total.toLocaleString()} руб.</div>
-        </div>
+
+        ${renderOrderRatingSummary(order.id)}
         
         <div class="order-actions">
             <button class="btn btn-outline" onclick="viewOrderDetails('${order.id}')">
@@ -665,6 +714,9 @@ function createOrderCard(order) {
                 <button class="btn btn-primary" onclick="repeatOrder('${order.id}')">
                     <i class="fas fa-redo"></i> Повторить
                 </button>
+                <button class="btn btn-secondary" onclick="openRatingModal('${order.id}')">
+                    <i class="fas fa-star"></i> ${orderRatings[order.id] ? 'Изменить оценку' : 'Оценить заказ'}
+                </button>
             ` : order.status === 'new' || order.status === 'processing' ? `
                 <button class="btn btn-secondary" onclick="cancelOrder('${order.id}')">
                     <i class="fas fa-times"></i> Отменить
@@ -673,10 +725,28 @@ function createOrderCard(order) {
             <button class="btn btn-outline" onclick="trackOrder('${order.id}')">
                 <i class="fas fa-truck"></i> Отследить
             </button>
+            <button class="btn btn-outline order-support-btn" onclick="openOrderSupportChat('${order.id}')">
+                <i class="fas fa-headset"></i> Чат с поддержкой по заказу
+            </button>
         </div>
     `;
     
     return orderCard;
+}
+
+function renderOrderRatingSummary(orderId) {
+    const rating = orderRatings[orderId];
+    if (!rating) {
+        return '';
+    }
+
+    return `
+        <div class="order-rating-summary">
+            <span>${renderStars(rating.rating)}</span>
+            <strong>${rating.rating}/5</strong>
+            <p>${rating.comment || 'Спасибо за оценку заказа.'}</p>
+        </div>
+    `;
 }
 
 // Обновление статистики
@@ -878,6 +948,8 @@ function viewOrderDetails(orderId) {
                     `).join('')}
                 </div>
             </div>
+
+            ${order.status === 'delivered' ? renderOrderRatingDetails(order.id) : ''}
             
             <div class="order-info-grid">
                 <div class="info-section">
@@ -907,6 +979,36 @@ function viewOrderDetails(orderId) {
     // Показываем модальное окно
     orderDetailsModal.classList.add('active');
     document.body.style.overflow = 'hidden';
+}
+
+function renderOrderRatingDetails(orderId) {
+    const rating = orderRatings[orderId];
+
+    if (!rating) {
+        return `
+            <div class="order-rating-details">
+                <h3><i class="fas fa-star"></i> Оценка заказа</h3>
+                <p>Поделитесь впечатлением о продукте, упаковке и доставке.</p>
+                <button class="btn btn-primary" type="button" onclick="openRatingModal('${orderId}')">
+                    Оценить заказ
+                </button>
+            </div>
+        `;
+    }
+
+    return `
+        <div class="order-rating-details">
+            <h3><i class="fas fa-star"></i> Ваша оценка</h3>
+            <div class="order-rating-summary in-modal">
+                <span>${renderStars(rating.rating)}</span>
+                <strong>${rating.rating}/5</strong>
+                <p>${rating.comment || 'Комментарий не указан.'}</p>
+            </div>
+            <button class="btn btn-outline" type="button" onclick="openRatingModal('${orderId}')">
+                Изменить оценку
+            </button>
+        </div>
+    `;
 }
 
 function closeOrderDetailsModal() {
@@ -988,6 +1090,236 @@ function trackOrder(orderId) {
             trackingSection.scrollIntoView({ behavior: 'smooth' });
         }
     }, 100);
+}
+
+function initOrderSupportChat() {
+    if (document.querySelector('.consultant-chat-widget')) return;
+
+    const widget = document.createElement('div');
+    widget.className = 'consultant-chat-widget order-support-widget';
+    widget.innerHTML = `
+        <section class="consultant-chat-panel" aria-label="Чат с поддержкой по заказу" aria-hidden="true">
+            <header class="consultant-chat-header">
+                <div class="consultant-avatar" aria-hidden="true">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <div>
+                    <span>Order support</span>
+                    <strong>Поддержка по заказу</strong>
+                </div>
+                <button class="consultant-chat-close" type="button" aria-label="Закрыть чат">
+                    <i class="fas fa-times"></i>
+                </button>
+            </header>
+            <div class="consultant-chat-body" id="orderSupportChatBody">
+                <div class="consultant-message consultant-message-bot">
+                    Напишите вопрос или откройте чат из карточки заказа, чтобы мы сразу увидели его номер.
+                </div>
+            </div>
+            <form class="consultant-chat-form" id="orderSupportChatForm">
+                <label class="sr-only" for="orderSupportMessage">Сообщение в поддержку</label>
+                <input id="orderSupportMessage" type="text" placeholder="Напишите вопрос по заказу..." autocomplete="off">
+                <button type="submit" aria-label="Отправить сообщение">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </section>
+
+        <button class="consultant-chat-trigger" type="button" aria-label="Открыть чат с поддержкой">
+            <i class="fas fa-headset"></i>
+            <span class="consultant-chat-dot" aria-hidden="true"></span>
+        </button>
+    `;
+
+    document.body.appendChild(widget);
+
+    const panel = widget.querySelector('.consultant-chat-panel');
+    const trigger = widget.querySelector('.consultant-chat-trigger');
+    const closeButton = widget.querySelector('.consultant-chat-close');
+    const form = widget.querySelector('#orderSupportChatForm');
+    const input = widget.querySelector('#orderSupportMessage');
+
+    trigger.addEventListener('click', () => openOrderSupportChat());
+    closeButton.addEventListener('click', closeOrderSupportChat);
+
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        sendOrderSupportMessage(input.value);
+        input.value = '';
+    });
+
+    panel.setAttribute('aria-hidden', 'true');
+}
+
+function openOrderSupportChat(orderId = '') {
+    const widget = document.querySelector('.order-support-widget');
+    if (!widget) return;
+
+    widget.classList.add('chat-open');
+    widget.querySelector('.consultant-chat-panel')?.setAttribute('aria-hidden', 'false');
+
+    if (orderId) {
+        const order = ordersData.find(item => item.id === orderId);
+        const message = `Здравствуйте, нужна помощь по заказу #${orderId}${order ? ` от ${order.deliveryDate}` : ''}.`;
+        sendOrderSupportMessage(message, true);
+    }
+
+    window.setTimeout(() => {
+        document.getElementById('orderSupportMessage')?.focus();
+    }, 120);
+}
+
+function closeOrderSupportChat() {
+    const widget = document.querySelector('.order-support-widget');
+    widget?.classList.remove('chat-open');
+    widget?.querySelector('.consultant-chat-panel')?.setAttribute('aria-hidden', 'true');
+}
+
+function sendOrderSupportMessage(message, skipDuplicate = false) {
+    const cleanMessage = message.trim();
+    const body = document.getElementById('orderSupportChatBody');
+    if (!cleanMessage || !body) return;
+
+    if (skipDuplicate) {
+        const userMessages = [...body.querySelectorAll('.consultant-message-user')];
+        const lastUserMessage = userMessages[userMessages.length - 1];
+        if (lastUserMessage?.textContent === cleanMessage) return;
+    }
+
+    addOrderSupportChatMessage(cleanMessage, 'user');
+
+    window.setTimeout(() => {
+        addOrderSupportChatMessage('Спасибо, номер заказа передан консультанту. Мы проверим статус и ответим здесь.', 'bot');
+    }, 420);
+}
+
+function addOrderSupportChatMessage(message, type) {
+    const body = document.getElementById('orderSupportChatBody');
+    if (!body) return;
+
+    const messageElement = document.createElement('div');
+    messageElement.className = `consultant-message consultant-message-${type}`;
+    messageElement.textContent = message;
+    body.appendChild(messageElement);
+    body.scrollTop = body.scrollHeight;
+}
+
+function initOrderRatingModal() {
+    if (document.getElementById('orderRatingModal')) return;
+
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'orderRatingModal';
+    modal.innerHTML = `
+        <div class="modal-content order-rating-modal-content">
+            <div class="modal-header">
+                <h2>Оценка заказа</h2>
+                <button class="close-modal" type="button" data-close-rating>&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="orderRatingForm" class="order-rating-form">
+                    <input type="hidden" id="ratingOrderId">
+                    <div class="rating-stars" aria-label="Оценка заказа">
+                        ${[1, 2, 3, 4, 5].map(value => `
+                            <button type="button" class="rating-star" data-rating="${value}" aria-label="${value} из 5">
+                                <i class="fas fa-star"></i>
+                            </button>
+                        `).join('')}
+                    </div>
+                    <p class="rating-helper">Оцените свежесть продукта, упаковку и доставку.</p>
+                    <div class="form-group">
+                        <label for="ratingComment">Комментарий</label>
+                        <textarea id="ratingComment" rows="4" placeholder="Что понравилось или что можно улучшить?"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Сохранить оценку</button>
+                </form>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    modal.querySelectorAll('[data-close-rating]').forEach(button => {
+        button.addEventListener('click', closeRatingModal);
+    });
+
+    modal.addEventListener('click', event => {
+        if (event.target === modal) {
+            closeRatingModal();
+        }
+    });
+
+    modal.querySelectorAll('.rating-star').forEach(button => {
+        button.addEventListener('click', () => setRatingValue(Number(button.dataset.rating)));
+    });
+
+    modal.querySelector('#orderRatingForm').addEventListener('submit', event => {
+        event.preventDefault();
+        saveOrderRating();
+    });
+}
+
+function openRatingModal(orderId) {
+    const order = ordersData.find(item => item.id === orderId);
+    if (!order || order.status !== 'delivered') {
+        showNotification('Оценить можно только доставленный заказ', 'warning');
+        return;
+    }
+
+    const modal = document.getElementById('orderRatingModal');
+    const currentRating = orderRatings[orderId] || { rating: 5, comment: '' };
+
+    document.getElementById('ratingOrderId').value = orderId;
+    document.getElementById('ratingComment').value = currentRating.comment || '';
+    modal.dataset.rating = currentRating.rating;
+    setRatingValue(Number(currentRating.rating));
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeRatingModal() {
+    const modal = document.getElementById('orderRatingModal');
+    modal?.classList.remove('active');
+    document.body.style.overflow = orderDetailsModal.classList.contains('active') ? 'hidden' : '';
+}
+
+function setRatingValue(value) {
+    const modal = document.getElementById('orderRatingModal');
+    modal.dataset.rating = value;
+
+    modal.querySelectorAll('.rating-star').forEach(button => {
+        button.classList.toggle('active', Number(button.dataset.rating) <= value);
+    });
+}
+
+function saveOrderRating() {
+    const modal = document.getElementById('orderRatingModal');
+    const orderId = document.getElementById('ratingOrderId').value;
+    const rating = Number(modal.dataset.rating || 5);
+    const comment = document.getElementById('ratingComment').value.trim();
+
+    orderRatings[orderId] = {
+        rating,
+        comment,
+        createdAt: orderRatings[orderId]?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+
+    localStorage.setItem(RATING_STORAGE_KEY, JSON.stringify(orderRatings));
+    closeRatingModal();
+    renderOrders();
+    updatePagination();
+
+    if (orderDetailsModal.classList.contains('active')) {
+        viewOrderDetails(orderId);
+    }
+
+    showNotification('Спасибо, оценка заказа сохранена!');
+}
+
+function renderStars(rating) {
+    return Array.from({ length: 5 }, (_, index) => index < Number(rating) ? '★' : '☆').join('');
 }
 
 function showNotification(message, type = 'success') {
