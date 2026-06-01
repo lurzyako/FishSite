@@ -1,7 +1,7 @@
 // orders.js - Логика для страницы заказов с переключателем режима
 
 // Данные заказов (клиентские)
-const ordersData = [
+let ordersData = [
     {
         id: "FISH-001245",
         date: "15 января 2024",
@@ -199,7 +199,7 @@ const ordersData = [
 ];
 
 // Данные для админского режима (все заказы)
-const adminOrdersData = [
+let adminOrdersData = [
     ...ordersData,
     {
         id: "FISH-001241",
@@ -285,8 +285,7 @@ const adminOrdersData = [
 
 // Переменные для режимов
 let isAdminMode = false;
-const RATING_STORAGE_KEY = 'orderRatings';
-let orderRatings = JSON.parse(localStorage.getItem(RATING_STORAGE_KEY) || '{}');
+let orderRatings = {};
 
 // Переменные для пагинации
 let currentPage = 1;
@@ -314,8 +313,14 @@ const adminOrdersTable = document.getElementById('adminOrdersTable');
 const adminOrdersTableBody = document.getElementById('adminOrdersTableBody');
 
 // Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    await window.FishSite?.init?.();
+    if (!window.FishSite?.getCurrentUser?.()) {
+        window.location.href = '../index.html';
+        return;
+    }
     loadUserData();
+    await loadOrdersFromApi();
     setupNavigation();
     updateCartCount();
     updateOrderStats();
@@ -369,9 +374,30 @@ document.addEventListener('DOMContentLoaded', function() {
     initOrderRatingModal();
 });
 
+async function loadOrdersFromApi() {
+    if (!window.FishSite?.request) return;
+    const userData = window.FishSite?.getCurrentUser?.();
+    try {
+        const email = encodeURIComponent(userData?.email || 'olga@example.com');
+        ordersData = await window.FishSite.request(`/orders?email=${email}`);
+        if (userData?.role === 'admin') {
+            adminOrdersData = await window.FishSite.request('/admin/orders');
+            const overview = await window.FishSite.request('/admin/overview');
+            orderRatings = Object.fromEntries((overview.ratings || []).map(item => [
+                item.order_number,
+                { rating: item.rating, comment: item.comment, createdAt: item.created_at }
+            ]));
+        } else {
+            adminOrdersData = ordersData;
+        }
+    } catch (error) {
+        showNotification('API заказов недоступен, показаны демо-заказы', 'warning');
+    }
+}
+
 // Инициализация переключателя режима
 function initModeSwitcher() {
-    const userData = JSON.parse(localStorage.getItem('user') || 'null');
+    const userData = window.FishSite?.getCurrentUser?.();
     const isAdmin = userData?.role === 'admin';
 
     if (!isAdmin) {
@@ -491,7 +517,7 @@ function renderAdminOrders() {
 
 // Функции из account.js
 function loadUserData() {
-    const userData = JSON.parse(localStorage.getItem('user')) || {
+    const userData = window.FishSite?.getCurrentUser?.() || {
         name: "Ольга Ивановна",
         email: "olga@example.com",
         initials: "ОИ",
@@ -566,15 +592,14 @@ function setupNavigation() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            localStorage.removeItem('user');
-            localStorage.removeItem('rememberMe');
+            window.FishSite?.logout?.();
             window.location.href = '../index.html';
         });
     }
 }
 
 function updateCartCount() {
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const cart = window.FishSite?.getCart ? window.FishSite.getCart() : [];
     const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
     
     const cartCountElements = document.querySelectorAll('.cart-count');
@@ -667,7 +692,7 @@ function createOrderCard(order) {
                 <div class="order-products">
                     ${shownProducts.map(product => `
                         <div class="product-item">
-                            <div class="product-icon">${product.image}</div>
+                            <div class="product-icon">${window.FishSite?.formatProductImage ? window.FishSite.formatProductImage(product, 'order-product-art') : product.image}</div>
                             <div class="product-info">
                                 <div class="product-name">${product.name}</div>
                                 <div class="product-meta">
@@ -856,7 +881,9 @@ function goToNextPage() {
 function getStatusText(status) {
     const statusMap = {
         'new': 'Новый',
-        'processing': 'В обработке',
+        'confirmed': 'Подтвержден',
+        'processing': 'Собирается',
+        'courier': 'Передан курьеру',
         'delivered': 'Доставлен',
         'cancelled': 'Отменен'
     };
@@ -914,7 +941,7 @@ function viewOrderDetails(orderId) {
                 ${order.products.map(product => `
                     <div class="product-item">
                         <div class="product-info">
-                            <div class="product-icon">${product.image}</div>
+                            <div class="product-icon">${window.FishSite?.formatProductImage ? window.FishSite.formatProductImage(product, 'order-product-art') : product.image}</div>
                             <div>
                                 <div class="product-name">${product.name}</div>
                                 <div class="product-meta">
@@ -948,6 +975,23 @@ function viewOrderDetails(orderId) {
                     `).join('')}
                 </div>
             </div>
+
+            ${order.statusHistory?.length ? `
+                <div class="tracking-info order-status-history">
+                    <h3><i class="fas fa-clock-rotate-left"></i> История статусов</h3>
+                    <div class="tracking-steps">
+                        ${order.statusHistory.map(item => `
+                            <div class="tracking-step active">
+                                <div class="step-icon"><i class="fas fa-circle-check"></i></div>
+                                <div>
+                                    <div class="step-label">${item.label}</div>
+                                    <div class="step-time">${item.createdAt}${item.comment ? ` • ${item.comment}` : ''}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
 
             ${order.status === 'delivered' ? renderOrderRatingDetails(order.id) : ''}
             
@@ -1021,31 +1065,14 @@ function getStepIcon(stepIndex) {
     return icons[stepIndex] || 'circle';
 }
 
-function repeatOrder(orderId) {
+async function repeatOrder(orderId) {
     const allOrders = isAdminMode ? adminOrdersData : ordersData;
     const order = allOrders.find(o => o.id === orderId);
     if (!order) return;
     
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
-    
-    order.products.forEach(product => {
-        const existingItem = cart.find(item => item.id === product.id);
-        
-        if (existingItem) {
-            existingItem.quantity += product.quantity;
-        } else {
-            cart.push({
-                id: product.id,
-                name: product.name,
-                price: product.price,
-                quantity: product.quantity,
-                unit: product.unit,
-                image: product.image
-            });
-        }
-    });
-    
-    localStorage.setItem('cart', JSON.stringify(cart));
+    for (const product of order.products) {
+        await window.FishSite?.addToCart?.(product, product.quantity);
+    }
     updateCartCount();
     
     showNotification('Товары добавлены в корзину! Вы можете перейти к оформлению заказа.');
@@ -1306,7 +1333,10 @@ function saveOrderRating() {
         updatedAt: new Date().toISOString()
     };
 
-    localStorage.setItem(RATING_STORAGE_KEY, JSON.stringify(orderRatings));
+    window.FishSite?.request?.('/order-ratings', {
+        method: 'POST',
+        body: JSON.stringify({ orderId, rating, comment })
+    }).catch(() => {});
     closeRatingModal();
     renderOrders();
     updatePagination();

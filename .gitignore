@@ -3,3 +3,9 @@
 *.sqlite3
 *.db
 __pycache__/
+*.py[cod]
+*.log
+.env
+.venv/
+tmp/
+assets/uploads/

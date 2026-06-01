@@ -4,21 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Рыба и морепродукты | ИП Чепурнова О.И.</title>
+    <meta name="description" content="Морские Дары — демонстрационный сервис доставки охлажденной и замороженной рыбы и морепродуктов в Екатеринбурге с холодной логистикой 0-2°C.">
+    <meta property="og:title" content="Морские Дары | Рыба и морепродукты">
+    <meta property="og:description" content="Премиальная доставка рыбы и морепродуктов для дома, частных ужинов и ресторанной кухни.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="assets/images/luxury-seafood-hero.jpg">
+    <link rel="icon" type="image/png" href="assets/images/logo-morskie-dary.png?v=4">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="css/styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/luxury.css">
+    <link rel="stylesheet" href="css/luxury.css?v=12">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FoodEstablishment",
+        "name": "Морские Дары",
+        "description": "Демонстрационный сервис доставки рыбы и морепродуктов с холодной логистикой.",
+        "telephone": "+7 (343) 302-18-64",
+        "email": "orders@morskie-dary.example",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Екатеринбург",
+            "streetAddress": "ул. Репина, д. 15",
+            "addressCountry": "RU"
+        },
+        "openingHours": ["Mo-Fr 09:00-18:00", "Sa-Su 10:00-16:00"],
+        "servesCuisine": "Seafood"
+    }
+    </script>
 </head>
 <body>
     <!-- Шапка сайта -->
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <div class="logo">
-                    <h1>Морские Дары</h1>
-                    <p>ИП Чепурнова О.И.</p>
-                </div>
+                <a class="logo logo-link" href="index.html" aria-label="Морские Дары — на главную">
+                    <img class="logo-mark" src="assets/images/logo-morskie-dary.png?v=4" alt="" aria-hidden="true">
+                    <div class="logo-text">
+                        <h1>Морские Дары</h1>
+                        <p>ИП Чепурнова О.И.</p>
+                    </div>
+                </a>
                 
                 <nav class="nav">
                     <ul class="nav-list">
@@ -280,9 +308,7 @@
                     </div>
                 </div>
                 <div class="about-image">
-                    <div class="image-placeholder">
-                        <i class="fas fa-store"></i>
-                    </div>
+                    <img class="about-service-image" src="assets/images/about-seafood-service.png" alt="Сборка заказа рыбы и морепродуктов с холодной логистикой" loading="lazy">
                 </div>
             </div>
         </div>
@@ -371,11 +397,11 @@
                         <h3>Персональная консультация по заказу</h3>
                         <p>Поможем выбрать рыбу и морепродукты под сценарий: семейный ужин, подарок, ресторанную закупку или камерное мероприятие.</p>
                         <div class="contact-actions">
-                            <a href="tel:+7XXXXXXXXXX" class="btn btn-primary">
+                            <a href="tel:+73433021864" class="btn btn-primary">
                                 <i class="fas fa-phone"></i>
                                 Позвонить
                             </a>
-                            <a href="mailto:info@example.com" class="btn btn-secondary">
+                            <a href="mailto:orders@morskie-dary.example" class="btn btn-secondary">
                                 <i class="fas fa-envelope"></i>
                                 Написать
                             </a>
@@ -389,7 +415,7 @@
                             <div class="contact-details">
                                 <span>Прямой контакт</span>
                                 <h3>Телефон</h3>
-                                <p>+7 (XXX) XXX-XX-XX</p>
+                                <p>+7 (343) 302-18-64</p>
                             </div>
                         </div>
                         <div class="contact-item">
@@ -399,7 +425,7 @@
                             <div class="contact-details">
                                 <span>Заявки и подбор</span>
                                 <h3>Email</h3>
-                                <p>info@example.com</p>
+                                <p>orders@morskie-dary.example</p>
                             </div>
                         </div>
                         <div class="contact-item">
@@ -501,7 +527,12 @@
     </section>
 
     <!-- Футер -->
-    <footer class="footer">
+    <footer id="site-footer" class="footer site-footer" aria-label="Подвал сайта">
+        <div class="footer-video-layer" aria-hidden="true">
+            <video autoplay muted loop playsinline preload="metadata">
+                <source src="assets/video/footer-sea-wave.mp4" type="video/mp4">
+            </video>
+        </div>
         <div class="container">
             <div class="footer-cta">
                 <div class="footer-cta-copy">
@@ -516,12 +547,18 @@
             </div>
             <div class="footer-content">
                 <div class="footer-section footer-brand">
-                    <h3>Морские Дары</h3>
-                    <p>ИП Чепурнова Ольга Ивановна</p>
-                    <p>Продажа и доставка охлажденной и замороженной рыбы и морепродуктов</p>
+                    <a class="footer-logo" href="index.html" aria-label="Морские Дары — на главную">
+                        <img src="assets/images/logo-morskie-dary.png?v=4" alt="" aria-hidden="true">
+                        <span>
+                            <strong>Морские Дары</strong>
+                            <small>ИП Чепурнова О.И.</small>
+                        </span>
+                    </a>
+                    <p>Продажа и доставка охлажденной и замороженной рыбы и морепродуктов.</p>
                     <div class="footer-brand-meta">
                         <span>Екатеринбург</span>
                         <span>0-2°C логистика</span>
+                        <span>Демо-проект</span>
                     </div>
                 </div>
                 <div class="footer-section">
@@ -539,17 +576,19 @@
                         <li><a href="pages/account.html">Личный кабинет</a></li>
                         <li><a href="pages/orders.html">Мои заказы</a></li>
                         <li><a href="pages/favorites.html">Избранное</a></li>
-                        <li><a href="#delivery">Доставка и оплата</a></li>
+                        <li><a href="pages/delivery-payment.html">Доставка и оплата</a></li>
+                        <li><a href="pages/return.html">Возврат</a></li>
+                        <li><a href="pages/privacy.html">Политика данных</a></li>
+                        <li><a href="pages/requisites.html">Реквизиты</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
+                <div class="footer-section footer-contact-card">
                     <h4>Свяжитесь с нами</h4>
-                    <p>Ответим на вопросы по наличию, доставке и подбору продуктов.</p>
+                    <p>+7 (343) 302-18-64</p>
+                    <p>orders@morskie-dary.example</p>
                     <div class="social-links">
-                        <a href="#" aria-label="VK"><i class="fab fa-vk"></i></a>
-                        <a href="#" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
-                        <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://vk.com/morskie_dary_demo" target="_blank" rel="noopener" aria-label="VK"><i class="fab fa-vk"></i></a>
+                        <a href="https://t.me/morskie_dary_demo" target="_blank" rel="noopener" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
                     </div>
                 </div>
             </div>
@@ -597,8 +636,8 @@
                     </div>
                     <div class="form-group">
                         <label for="auth-password">Пароль</label>
-                        <input type="password" id="auth-password" placeholder="Введите ваш пароль" required>
-                        <div class="password-toggle">
+                        <div class="password-field">
+                            <input type="password" id="auth-password" placeholder="Введите ваш пароль" required>
                             <button type="button" class="toggle-password" id="toggle-password">
                                 <i class="fas fa-eye"></i>
                             </button>
@@ -682,9 +721,8 @@
         </div>
     </div>
 
-    <!-- Яндекс Карты -->
-    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
-    <script src="js/main.js"></script>
-    <script src="js/luxury.js"></script>
+    <script src="js/fishsite-core.js?v=3"></script>
+    <script src="js/main.js?v=14"></script>
+    <script src="js/luxury.js?v=2"></script>
 </body>
 </html>

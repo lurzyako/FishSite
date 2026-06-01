@@ -111,14 +111,15 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 1rem;
 }
 
-.password-toggle {
+.password-field {
     position: relative;
 }
 
 .toggle-password {
     position: absolute;
-    right: 10px;
+    right: 12px;
     top: 50%;
+    bottom: auto;
     transform: translateY(-50%);
     background: none;
     border: none;
@@ -126,6 +127,8 @@ h1, h2, h3, h4, h5, h6 {
     cursor: pointer;
     padding: 5px;
     font-size: 1rem;
+    line-height: 1;
+    z-index: 2;
 }
 
 .toggle-password:hover {
@@ -1351,6 +1354,10 @@ h1, h2, h3, h4, h5, h6 {
     border: 1px solid var(--gray-light);
     border-radius: 4px;
     font-family: 'Open Sans', sans-serif;
+}
+
+.form-group input[type="password"] {
+    padding-right: 56px;
 }
 
 /* Контакты */

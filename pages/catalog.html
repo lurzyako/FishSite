@@ -4,20 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Каталог продукции | Морские Дары</title>
+    <meta name="description" content="Каталог рыбы и морепродуктов Морские Дары: охлажденная рыба, замороженная рыба, филе, стейки и морепродукты.">
+    <link rel="icon" type="image/png" href="../assets/images/logo-morskie-dary.png?v=4">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="../css/styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../css/luxury.css">
+    <link rel="stylesheet" href="../css/luxury.css?v=12">
 </head>
 <body>
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <div class="logo">
-                    <h1>Морские Дары</h1>
-                    <p>ИП Чепурнова О.И.</p>
-                </div>
+                <a class="logo logo-link" href="../index.html" aria-label="Морские Дары — на главную">
+                    <img class="logo-mark" src="../assets/images/logo-morskie-dary.png?v=4" alt="" aria-hidden="true">
+                    <div class="logo-text">
+                        <h1>Морские Дары</h1>
+                        <p>ИП Чепурнова О.И.</p>
+                    </div>
+                </a>
 
                 <nav class="nav">
                     <ul class="nav-list">
@@ -106,10 +112,15 @@
                             </select>
                         </div>
                     </div>
+                    <div class="catalog-search-row" role="search" aria-label="Поиск и фильтр каталога">
+                        <label class="sr-only" for="catalog-search">Поиск по каталогу</label>
+                        <input type="search" id="catalog-search" placeholder="Поиск по названию, происхождению или описанию">
+                        <label for="price-range">Цена до <span id="price-range-value">2500</span> руб.</label>
+                        <input type="range" id="price-range" min="400" max="2600" step="50" value="2600">
+                    </div>
 
                     <div class="catalog-results-head">
                         <span>Seafood selection</span>
-                        <p>Карточки открываются в подробный просмотр, а избранное сохраняется в личном кабинете.</p>
                     </div>
 
                     <div class="products-grid">
@@ -120,18 +131,40 @@
         </section>
     </main>
 
-    <footer class="footer">
+    <!-- Футер -->
+    <footer id="site-footer" class="footer site-footer" aria-label="Подвал сайта">
+        <div class="footer-video-layer" aria-hidden="true">
+            <video autoplay muted loop playsinline preload="metadata">
+                <source src="../assets/video/footer-sea-wave.mp4" type="video/mp4">
+            </video>
+        </div>
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-cta">
-                    <span>Need help?</span>
-                    <h3>Подберем продукты под ваш формат заказа</h3>
-                    <a href="../index.html#contacts" class="btn btn-primary">Связаться</a>
+            <div class="footer-cta">
+                <div class="footer-cta-copy">
+                    <span>Private order</span>
+                    <h3>Соберем морскую подборку под ваш ужин</h3>
+                    <p>Подберем позиции, уточним формат разделки и согласуем доставку в удобное окно.</p>
                 </div>
-                <div class="footer-section">
-                    <h3>Морские Дары</h3>
-                    <p>ИП Чепурнова Ольга Ивановна</p>
-                    <p>Продажа и доставка охлажденной и замороженной рыбы и морепродуктов</p>
+                <div class="footer-cta-actions">
+                    <a href="catalog.html" class="btn btn-primary">Выбрать продукты</a>
+                    <a href="../index.html#contacts" class="btn btn-secondary">Связаться</a>
+                </div>
+            </div>
+            <div class="footer-content">
+                <div class="footer-section footer-brand">
+                    <a class="footer-logo" href="../index.html" aria-label="Морские Дары — на главную">
+                        <img src="../assets/images/logo-morskie-dary.png?v=4" alt="" aria-hidden="true">
+                        <span>
+                            <strong>Морские Дары</strong>
+                            <small>ИП Чепурнова О.И.</small>
+                        </span>
+                    </a>
+                    <p>Продажа и доставка охлажденной и замороженной рыбы и морепродуктов.</p>
+                    <div class="footer-brand-meta">
+                        <span>Екатеринбург</span>
+                        <span>0-2°C логистика</span>
+                        <span>Демо-проект</span>
+                    </div>
                 </div>
                 <div class="footer-section">
                     <h4>Каталог</h4>
@@ -148,21 +181,25 @@
                         <li><a href="account.html">Личный кабинет</a></li>
                         <li><a href="orders.html">Мои заказы</a></li>
                         <li><a href="favorites.html">Избранное</a></li>
-                        <li><a href="../index.html#delivery">Доставка и оплата</a></li>
+                        <li><a href="delivery-payment.html">Доставка и оплата</a></li>
+                        <li><a href="return.html">Возврат</a></li>
+                        <li><a href="privacy.html">Политика данных</a></li>
+                        <li><a href="requisites.html">Реквизиты</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
+                <div class="footer-section footer-contact-card">
                     <h4>Свяжитесь с нами</h4>
+                    <p>+7 (343) 302-18-64</p>
+                    <p>orders@morskie-dary.example</p>
                     <div class="social-links">
-                        <a href="#"><i class="fab fa-vk"></i></a>
-                        <a href="#"><i class="fab fa-telegram"></i></a>
-                        <a href="#"><i class="fab fa-whatsapp"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="https://vk.com/morskie_dary_demo" target="_blank" rel="noopener" aria-label="VK"><i class="fab fa-vk"></i></a>
+                        <a href="https://t.me/morskie_dary_demo" target="_blank" rel="noopener" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
                     </div>
                 </div>
             </div>
             <div class="footer-bottom">
                 <p>&copy; 2026 ИП Чепурнова О.И. Все права защищены.</p>
+                <span>Premium seafood delivery service</span>
             </div>
         </div>
     </footer>
@@ -200,8 +237,8 @@
                     </div>
                     <div class="form-group">
                         <label for="auth-password">Пароль</label>
-                        <input type="password" id="auth-password" placeholder="Введите ваш пароль" required>
-                        <div class="password-toggle">
+                        <div class="password-field">
+                            <input type="password" id="auth-password" placeholder="Введите ваш пароль" required>
                             <button type="button" class="toggle-password" id="toggle-password">
                                 <i class="fas fa-eye"></i>
                             </button>
@@ -212,6 +249,20 @@
                         <label for="remember-me">Запомнить меня</label>
                     </div>
                     <button type="submit" class="btn btn-primary btn-block">Войти</button>
+                    
+                    <div class="auth-divider">
+                        <span>или</span>
+                    </div>
+                    
+                    <div class="social-auth">
+                        <button type="button" class="btn btn-outline btn-social">
+                            <i class="fab fa-google"></i> Войти через Google
+                        </button>
+                        <button type="button" class="btn btn-outline btn-social">
+                            <i class="fab fa-vk"></i> Войти через VK
+                        </button>
+                    </div>
+                    
                     <div class="auth-links">
                         <a href="#" class="forgot-password">Забыли пароль?</a>
                         <a href="#" class="register-link">Зарегистрироваться</a>
@@ -270,7 +321,8 @@
         </div>
     </div>
 
-    <script src="../js/main.js"></script>
-    <script src="../js/luxury.js"></script>
+    <script src="../js/fishsite-core.js?v=3"></script>
+    <script src="../js/main.js?v=14"></script>
+    <script src="../js/luxury.js?v=2"></script>
 </body>
 </html>

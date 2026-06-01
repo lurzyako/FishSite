@@ -68,6 +68,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function updateFooterParallax() {
+        if (prefersReducedMotion) return;
+        document.querySelectorAll('.site-footer').forEach((footer) => {
+            const rect = footer.getBoundingClientRect();
+            const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+            if (rect.bottom < 0 || rect.top > viewportHeight) return;
+
+            const progress = Math.min(1, Math.max(0, (viewportHeight - rect.top) / (viewportHeight + rect.height)));
+            footer.style.setProperty('--footer-video-y', `${((progress - 0.5) * -52).toFixed(2)}px`);
+        });
+    }
+
     let ticking = false;
     function onScroll() {
         if (ticking) return;
@@ -75,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(() => {
             updateHeader();
             updateParallax();
+            updateFooterParallax();
             ticking = false;
         });
     }
@@ -329,13 +342,34 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCurrent();
     }
 
+    function setupFooterVideo() {
+        document.querySelectorAll('.site-footer').forEach((footer) => {
+            if (footer.dataset.footerVideoBound === 'true') return;
+            footer.dataset.footerVideoBound = 'true';
+
+            const video = footer.querySelector('.footer-video-layer video');
+            if (video && !prefersReducedMotion) {
+                video.muted = true;
+                video.playsInline = true;
+                video.play().catch(() => {
+                    video.controls = false;
+                });
+            }
+
+            footer.style.setProperty('--footer-rotate-x', '0deg');
+            footer.style.setProperty('--footer-rotate-y', '0deg');
+        });
+    }
+
     setupReveal();
     setupTilt();
     setupFishParallax();
     setupMagneticButtons();
     setupConceptScroll();
+    setupFooterVideo();
     updateHeader();
     updateParallax();
+    updateFooterParallax();
     window.addEventListener('scroll', onScroll, { passive: true });
 
     const mutationObserver = new MutationObserver(() => {
@@ -343,6 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupTilt();
         setupFishParallax();
         setupMagneticButtons();
+        setupFooterVideo();
     });
 
     mutationObserver.observe(document.body, {

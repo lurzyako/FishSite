@@ -15,20 +15,14 @@ const clearFavoritesBtn = document.getElementById('clearFavoritesBtn');
 const categoryCards = document.querySelectorAll('.category-card');
 
 // Функция загрузки данных избранного
-function loadFavoritesData() {
-    // Загружаем данные из localStorage
-    const savedFavorites = localStorage.getItem('favorites');
-    
-    if (savedFavorites) {
-        const favoriteIds = JSON.parse(savedFavorites);
-        // Получаем данные товаров из script.js
-        const allProducts = window.products || getDefaultProducts();
-        
-        // Фильтруем товары, которые находятся в избранном
-        favoritesData = allProducts.filter(product => favoriteIds.includes(product.id));
-    } else {
-        favoritesData = [];
-    }
+async function loadFavoritesData() {
+    const favorites = window.FishSite?.loadFavorites
+        ? await window.FishSite.loadFavorites()
+        : { ids: [], products: [] };
+    favoritesData = favorites.products?.length
+        ? favorites.products
+        : (window.FishSite?.getProducts ? await window.FishSite.getProducts() : getDefaultProducts())
+            .filter(product => (favorites.ids || []).includes(product.id));
     
     // Первоначальная отрисовка
     renderFavorites();
@@ -175,7 +169,7 @@ function createFavoriteCard(product) {
             <i class="fas fa-times"></i>
         </button>
         <div class="favorite-image">
-            ${product.image}
+            ${window.FishSite?.formatProductImage ? window.FishSite.formatProductImage(product, 'favorite-art-image') : product.image}
             ${product.hasDiscount ? '<div class="discount-badge">СКИДКА</div>' : ''}
         </div>
         <div class="favorite-info">
@@ -245,12 +239,8 @@ function getCategoryName(categoryCode) {
 }
 
 // Функция удаления из избранного
-function removeFromFavorites(productId) {
-    let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-    favorites = favorites.filter(id => id !== productId);
-    localStorage.setItem('favorites', JSON.stringify(favorites));
-    
-    // Обновляем данные
+async function removeFromFavorites(productId) {
+    await window.FishSite?.removeFavorite?.(productId);
     favoritesData = favoritesData.filter(item => item.id !== productId);
     
     // Получаем текущие значения фильтров
@@ -267,7 +257,7 @@ function removeFromFavorites(productId) {
 }
 
 // Функция добавления в корзину из избранного
-function addToCartFromFavorites(productId) {
+async function addToCartFromFavorites(productId) {
     const product = favoritesData.find(p => p.id === productId);
     if (!product) return;
     
@@ -275,20 +265,7 @@ function addToCartFromFavorites(productId) {
     if (typeof window.addToCart === 'function') {
         window.addToCart(productId, 1);
     } else {
-        // Локальная реализация
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        const existingItem = cart.find(item => item.id === productId);
-        
-        if (existingItem) {
-            existingItem.quantity += 1;
-        } else {
-            cart.push({
-                ...product,
-                quantity: 1
-            });
-        }
-        
-        localStorage.setItem('cart', JSON.stringify(cart));
+        if (window.FishSite?.addToCart) await window.FishSite.addToCart(product, 1);
         updateCartCount();
         showNotification(`Товар "${product.name}" добавлен в корзину!`);
     }
@@ -310,7 +287,7 @@ function viewProductDetails(productId) {
 
 // Функция обновления счетчика корзины
 function updateCartCount() {
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const cart = window.FishSite?.getCart ? window.FishSite.getCart() : [];
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     
     const cartCountElements = document.querySelectorAll('.cart-count');
@@ -321,7 +298,7 @@ function updateCartCount() {
 
 // Функция обновления счетчика избранного в навигации
 function updateFavoritesCountInNav() {
-    const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+    const favorites = window.FishSite?.getFavoriteIds ? window.FishSite.getFavoriteIds() : [];
     const favoritesCountElements = document.querySelectorAll('.favorites-count');
     
     favoritesCountElements.forEach(el => {
@@ -330,14 +307,14 @@ function updateFavoritesCountInNav() {
 }
 
 // Функция очистки всех избранных
-function clearAllFavorites() {
+async function clearAllFavorites() {
     if (favoritesData.length === 0) {
         showNotification('В избранном уже нет товаров', 'info');
         return;
     }
     
     if (confirm(`Вы уверены, что хотите очистить все избранное?\n\nБудет удалено ${favoritesData.length} товаров`)) {
-        localStorage.removeItem('favorites');
+        await window.FishSite?.clearFavorites?.();
         favoritesData = [];
         
         // Перерисовываем
@@ -354,14 +331,8 @@ function clearAllFavorites() {
 
 // Функция перехода к категории
 function browseCategory(category) {
-    // В реальном приложении здесь был бы переход в каталог с фильтром
     showNotification(`Переход в категорию "${getCategoryName(category)}"`);
-    
-    // Сохраняем выбранную категорию
-    localStorage.setItem('selectedCategory', category);
-    
-    // Перенаправляем в каталог
-    window.location.href = 'catalog.html';
+    window.location.href = `catalog.html?category=${encodeURIComponent(category)}`;
 }
 
 // Функция показа уведомления
@@ -406,7 +377,7 @@ function showNotification(message, type = 'success') {
 
 // Функции из account.js
 function loadUserData() {
-    const userData = JSON.parse(localStorage.getItem('user')) || {
+    const userData = window.FishSite?.getCurrentUser?.() || {
         name: "Ольга Ивановна",
         email: "olga@example.com",
         initials: "ОИ"
@@ -454,17 +425,17 @@ function setupNavigation() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            localStorage.removeItem('user');
-            localStorage.removeItem('rememberMe');
+            window.FishSite?.logout?.();
             window.location.href = 'index.html';
         });
     }
 }
 
 // Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    await window.FishSite?.init?.();
     // Проверяем авторизацию
-    const user = localStorage.getItem('user');
+    const user = window.FishSite?.getCurrentUser?.();
     if (!user) {
         window.location.href = 'index.html';
         return;

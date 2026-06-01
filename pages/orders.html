@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мои заказы | Морские Дары</title>
+    <link rel="icon" type="image/png" href="../assets/images/logo-morskie-dary.png?v=4">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="../css/styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../css/luxury.css">
+    <link rel="stylesheet" href="../css/luxury.css?v=12">
     <link rel="stylesheet" href="../css/orders.css">
 </head>
 <body class="account-shell">
@@ -16,10 +18,13 @@
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <div class="logo">
-                    <h1>Морские Дары</h1>
-                    <p>ИП Чепурнова О.И.</p>
-                </div>
+                <a class="logo logo-link" href="../index.html" aria-label="Морские Дары — на главную">
+                    <img class="logo-mark" src="../assets/images/logo-morskie-dary.png?v=4" alt="" aria-hidden="true">
+                    <div class="logo-text">
+                        <h1>Морские Дары</h1>
+                        <p>ИП Чепурнова О.И.</p>
+                    </div>
+                </a>
                 
                 <nav class="nav">
                     <ul class="nav-list">
@@ -244,13 +249,39 @@
     </section>
 
     <!-- Футер -->
-    <footer class="footer">
+    <footer id="site-footer" class="footer site-footer" aria-label="Подвал сайта">
+        <div class="footer-video-layer" aria-hidden="true">
+            <video autoplay muted loop playsinline preload="metadata">
+                <source src="../assets/video/footer-sea-wave.mp4" type="video/mp4">
+            </video>
+        </div>
         <div class="container">
+            <div class="footer-cta">
+                <div class="footer-cta-copy">
+                    <span>Private order</span>
+                    <h3>Соберем морскую подборку под ваш ужин</h3>
+                    <p>Подберем позиции, уточним формат разделки и согласуем доставку в удобное окно.</p>
+                </div>
+                <div class="footer-cta-actions">
+                    <a href="catalog.html" class="btn btn-primary">Выбрать продукты</a>
+                    <a href="../index.html#contacts" class="btn btn-secondary">Связаться</a>
+                </div>
+            </div>
             <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Морские Дары</h3>
-                    <p>ИП Чепурнова Ольга Ивановна</p>
-                    <p>Продажа и доставка охлажденной и замороженной рыбы и морепродуктов</p>
+                <div class="footer-section footer-brand">
+                    <a class="footer-logo" href="../index.html" aria-label="Морские Дары — на главную">
+                        <img src="../assets/images/logo-morskie-dary.png?v=4" alt="" aria-hidden="true">
+                        <span>
+                            <strong>Морские Дары</strong>
+                            <small>ИП Чепурнова О.И.</small>
+                        </span>
+                    </a>
+                    <p>Продажа и доставка охлажденной и замороженной рыбы и морепродуктов.</p>
+                    <div class="footer-brand-meta">
+                        <span>Екатеринбург</span>
+                        <span>0-2°C логистика</span>
+                        <span>Демо-проект</span>
+                    </div>
                 </div>
                 <div class="footer-section">
                     <h4>Каталог</h4>
@@ -262,25 +293,30 @@
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h4>Информация</h4>
+                    <h4>Покупателям</h4>
                     <ul>
-                        <li><a href="../index.html#about">О компании</a></li>
-                        <li><a href="../index.html#delivery">Доставка и оплата</a></li>
-                        <li><a href="../index.html#contacts">Контакты</a></li>
+                        <li><a href="account.html">Личный кабинет</a></li>
+                        <li><a href="orders.html">Мои заказы</a></li>
+                        <li><a href="favorites.html">Избранное</a></li>
+                        <li><a href="delivery-payment.html">Доставка и оплата</a></li>
+                        <li><a href="return.html">Возврат</a></li>
+                        <li><a href="privacy.html">Политика данных</a></li>
+                        <li><a href="requisites.html">Реквизиты</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
+                <div class="footer-section footer-contact-card">
                     <h4>Свяжитесь с нами</h4>
+                    <p>+7 (343) 302-18-64</p>
+                    <p>orders@morskie-dary.example</p>
                     <div class="social-links">
-                        <a href="#"><i class="fab fa-vk"></i></a>
-                        <a href="#"><i class="fab fa-telegram"></i></a>
-                        <a href="#"><i class="fab fa-whatsapp"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="https://vk.com/morskie_dary_demo" target="_blank" rel="noopener" aria-label="VK"><i class="fab fa-vk"></i></a>
+                        <a href="https://t.me/morskie_dary_demo" target="_blank" rel="noopener" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
                     </div>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 ИП Чепурнова О.И. Все права защищены.</p>
+                <p>&copy; 2026 ИП Чепурнова О.И. Все права защищены.</p>
+                <span>Premium seafood delivery service</span>
             </div>
         </div>
     </footer>
@@ -302,7 +338,8 @@
         </div>
     </div>
 
-    <script src="../js/orders.js"></script>
-    <script src="../js/luxury.js"></script>
+    <script src="../js/fishsite-core.js?v=3"></script>
+    <script src="../js/orders.js?v=3"></script>
+    <script src="../js/luxury.js?v=2"></script>
 </body>
 </html>

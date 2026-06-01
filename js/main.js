@@ -1,14 +1,22 @@
 // Инициализация Яндекс Карты
+let yandexMapLoading = false;
+
 function initMap() {
+    const mapElement = document.getElementById('map');
+    if (!mapElement) return;
+
     if (typeof ymaps !== 'undefined') {
         ymaps.ready(function() {
+            if (mapElement.dataset.mapReady === 'true') return;
+
+            mapElement.dataset.mapReady = 'true';
+
             var myMap = new ymaps.Map("map", {
-                center: [56.838011, 60.597465], // Координаты Екатеринбурга, ул. Репина, 15
+                center: [56.838011, 60.597465],
                 zoom: 16,
                 controls: ['zoomControl', 'fullscreenControl']
             });
 
-            // Добавляем метку
             var myPlacemark = new ymaps.Placemark([56.838011, 60.597465], {
                 balloonContent: 'Морские Дары<br>ИП Чепурнова О.И.<br>ул. Репина, 15'
             }, {
@@ -17,7 +25,53 @@ function initMap() {
 
             myMap.geoObjects.add(myPlacemark);
         });
+        return;
     }
+
+    if (yandexMapLoading) return;
+    yandexMapLoading = true;
+
+    const loadMap = () => {
+        if (typeof ymaps !== 'undefined') {
+            initMap();
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = 'https://api-maps.yandex.ru/2.1/?lang=ru_RU';
+        script.async = true;
+        script.onload = initMap;
+        script.onerror = renderMapFallback;
+        document.head.appendChild(script);
+    };
+
+    if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(entries => {
+            if (entries.some(entry => entry.isIntersecting)) {
+                observer.disconnect();
+                loadMap();
+            }
+        }, { rootMargin: '160px' });
+        observer.observe(mapElement);
+    } else {
+        loadMap();
+    }
+}
+
+function renderMapFallback() {
+    const mapElement = document.getElementById('map');
+    if (!mapElement) return;
+
+    mapElement.innerHTML = `
+        <div class="map-fallback">
+            <i class="fas fa-map-marker-alt"></i>
+            <p>г. Екатеринбург, ул. Репина, д. 15</p>
+            <span>Карта временно недоступна</span>
+            <div>
+                <a href="https://yandex.ru/maps/?text=Екатеринбург%2C%20ул.%20Репина%2C%2015" target="_blank" rel="noopener">Открыть в Яндекс.Картах</a>
+            </div>
+        </div>
+    `;
 }
 
 // Генерация анимированных рыб и пузырьков
@@ -143,7 +197,7 @@ function generateUnderwaterScene() {
 }
 
 // Данные товаров
-const products = [
+let products = window.FishSite?.fallbackProducts || [
     {
         id: 1,
         name: "Сёмга охлажденная",
@@ -305,11 +359,11 @@ const products = [
 const featuredProductIds = [11, 1, 3, 8, 9, 6];
 
 // Корзина
-let cart = [];
+let cart = window.FishSite?.getCart() || [];
 let cartCount = 0;
 
 // Избранное
-let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+let favorites = window.FishSite?.getFavoriteIds ? window.FishSite.getFavoriteIds() : [];
 
 // DOM элементы
 const productsGrid = document.querySelector('.products-grid');
@@ -325,8 +379,44 @@ const cartItems = document.querySelector('.cart-items');
 const totalPriceElement = document.querySelector('.total-price');
 const filterButtons = document.querySelectorAll('.filter-btn');
 const sortSelect = document.getElementById('sort');
+const catalogSearchInput = document.getElementById('catalog-search');
+const priceRangeInput = document.getElementById('price-range');
+const priceRangeValue = document.getElementById('price-range-value');
 const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
 const nav = document.querySelector('.nav');
+const catalogSearchScores = new Map();
+let catalogSearchRequestId = 0;
+
+const SEARCH_SYNONYM_GROUPS = [
+    ['семга', 'сёмга', 'лосось', 'лососевый', 'salmon'],
+    ['форель', 'trout'],
+    ['треска', 'cod'],
+    ['пангасиус', 'pangasius'],
+    ['дорадо', 'дорада', 'dorade', 'sea bream'],
+    ['камбала', 'flounder'],
+    ['креветка', 'креветки', 'shrimp', 'prawn'],
+    ['кальмар', 'squid', 'calamari'],
+    ['мидия', 'мидии', 'mussel', 'mussels'],
+    ['осьминог', 'octopus'],
+    ['икра', 'caviar'],
+    ['рыба', 'рыбка', 'рыбный'],
+    ['филе', 'филейный', 'fillet'],
+    ['стейк', 'стейки', 'steak'],
+    ['морепродукт', 'морепродукты', 'дары моря', 'seafood'],
+    ['охлажденный', 'охлажденная', 'охлажденное', 'свежий', 'свежая', 'fresh'],
+    ['замороженный', 'замороженная', 'замороженное', 'мороженый', 'мороз', 'frozen'],
+    ['премиум', 'премиальный', 'premium'],
+    ['ресторан', 'ресторана', 'restaurant', 'chef'],
+    ['гриль', 'сковорода', 'жарка', 'запекание', 'духовка']
+];
+
+const SEARCH_SYNONYMS = SEARCH_SYNONYM_GROUPS.reduce((dictionary, group) => {
+    const normalizedGroup = [...new Set(group.flatMap(term => tokenizeSearchText(term)))];
+    normalizedGroup.forEach(term => {
+        dictionary[term] = normalizedGroup.filter(alias => alias !== term);
+    });
+    return dictionary;
+}, {});
 
 // DOM элементы для авторизации
 const loginBtn = document.getElementById('login-btn');
@@ -347,6 +437,14 @@ const checkoutModal = document.getElementById('checkout-modal');
 const closeCheckoutBtn = document.getElementById('close-checkout');
 const checkoutForm = document.getElementById('checkout-form');
 const checkoutTotal = document.querySelector('.checkout-total');
+let checkoutStep = 0;
+let checkoutWizardReady = false;
+const checkoutSteps = [
+    { key: 'cart', label: 'Корзина' },
+    { key: 'contacts', label: 'Контакты' },
+    { key: 'delivery', label: 'Доставка' },
+    { key: 'confirm', label: 'Подтверждение' }
+];
 
 // DOM элементы для модального окна товара
 const productModal = document.createElement('div');
@@ -367,9 +465,13 @@ const closeProductModal = document.getElementById('close-product-modal');
 const productModalContainer = document.querySelector('.product-modal-container');
 
 // Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     initMap();
     generateUnderwaterScene();
+    await window.FishSite?.init?.();
+    cart = window.FishSite?.getCart ? window.FishSite.getCart() : [];
+    favorites = window.FishSite?.getFavoriteIds ? window.FishSite.getFavoriteIds() : [];
+    await loadProducts();
     renderFeaturedCarousel();
     initEventListeners();
     if (productsGrid) {
@@ -384,6 +486,22 @@ document.addEventListener('DOMContentLoaded', function() {
     updateFavoritesCount();
     initConsultantChat();
 });
+
+async function loadProducts() {
+    if (!window.FishSite?.getProducts) return;
+    products = await window.FishSite.getProducts();
+    window.products = products;
+    if (products.offline) {
+        showNotification('API недоступен, каталог открыт в демо-режиме', 'warning');
+    }
+}
+
+function productImageMarkup(product, className = '') {
+    if (window.FishSite?.formatProductImage) {
+        return window.FishSite.formatProductImage(product, className);
+    }
+    return `<span>${product.image || product.imageSymbol || ''}</span>`;
+}
 
 // Инициализация обработчиков событий
 function initEventListeners() {
@@ -402,6 +520,13 @@ function initEventListeners() {
     
     // Сортировка
     sortSelect?.addEventListener('change', handleSortChange);
+    catalogSearchInput?.addEventListener('input', () => renderCurrentCatalogView());
+    catalogSearchInput?.addEventListener('search', () => renderCurrentCatalogView());
+    priceRangeInput?.addEventListener('input', () => {
+        if (priceRangeValue) priceRangeValue.textContent = priceRangeInput.value;
+        renderCurrentCatalogView();
+    });
+    initCatalogSearchSuggestions();
 
     initFeaturedCarouselControls();
     
@@ -456,6 +581,12 @@ function initEventListeners() {
     // Ссылки в форме авторизации
     forgotPasswordLink?.addEventListener('click', handleForgotPassword);
     registerLink?.addEventListener('click', handleRegister);
+    document.querySelectorAll('.btn-social').forEach(button => {
+        button.addEventListener('click', () => {
+            const text = button.textContent.toLowerCase();
+            window.FishSite?.startOAuth?.(text.includes('vk') ? 'vk' : 'google');
+        });
+    });
     
     // Закрытие меню пользователя при клике вне его
     document.addEventListener('click', function(e) {
@@ -475,6 +606,7 @@ function initEventListeners() {
     checkoutBtn?.addEventListener('click', openCheckoutModal);
     closeCheckoutBtn?.addEventListener('click', closeCheckoutModal);
     checkoutForm?.addEventListener('submit', handleCheckoutSubmit);
+    checkoutForm?.addEventListener('click', handleCheckoutWizardClick);
     
     checkoutModal?.addEventListener('click', function(e) {
         if (e.target === checkoutModal) {
@@ -561,17 +693,23 @@ function initConsultantChat() {
     const input = widget.querySelector('#consultant-message');
     const body = widget.querySelector('.consultant-chat-body');
     const quickButtons = widget.querySelectorAll('.consultant-quick-actions button');
+    let currentThreadId = null;
+    let chatPollTimer = null;
+    let renderedMessagesSignature = '';
 
-    const openChat = () => {
+    const openChat = async () => {
         widget.classList.add('chat-open');
         widget.classList.remove('chat-popover-visible');
         panel.setAttribute('aria-hidden', 'false');
         window.setTimeout(() => input?.focus(), 120);
+        await loadChatThread();
+        startChatPolling();
     };
 
     const closeChat = () => {
         widget.classList.remove('chat-open');
         panel.setAttribute('aria-hidden', 'true');
+        stopChatPolling();
         trigger?.focus();
     };
 
@@ -588,19 +726,96 @@ function initConsultantChat() {
         body.scrollTop = body.scrollHeight;
     };
 
-    const addBotReply = () => {
-        window.setTimeout(() => {
-            addMessage('Приняли запрос. Консультант уточнит наличие, формат разделки и удобное время доставки. Для быстрой связи оставьте телефон или нажмите "Позвонить" в контактах.', 'bot');
-        }, 560);
+    const bindQuickActions = (container) => {
+        container.querySelectorAll('.consultant-quick-actions button').forEach(button => {
+            button.addEventListener('click', () => {
+                sendMessage(button.dataset.message || button.textContent);
+            });
+        });
     };
 
-    const sendMessage = (message) => {
+    const renderMessages = (messages = []) => {
+        const signature = JSON.stringify(messages.map(item => [item.id, item.senderRole, item.body, item.createdAt]));
+        if (signature === renderedMessagesSignature) return;
+        renderedMessagesSignature = signature;
+
+        body.innerHTML = '';
+        if (!messages.length) {
+            body.innerHTML = `
+                <div class="consultant-message consultant-message-bot">
+                    Добрый день. Подскажу по свежести, разделке, доставке и подборке под ужин.
+                </div>
+                <div class="consultant-quick-actions" aria-label="Быстрые вопросы">
+                    <button type="button" data-message="Помогите подобрать рыбу на ужин">Подбор на ужин</button>
+                    <button type="button" data-message="Какая доставка доступна сегодня?">Доставка сегодня</button>
+                    <button type="button" data-message="Нужна подборка для ресторана">Для ресторана</button>
+                </div>
+            `;
+            bindQuickActions(body);
+            return;
+        }
+
+        messages.forEach(item => {
+            addMessage(item.body, item.senderRole === 'customer' ? 'user' : 'bot');
+        });
+    };
+
+    const loadChatThread = async () => {
+        if (!window.FishSite?.request) return;
+        try {
+            const data = await window.FishSite.request('/chat/thread');
+            currentThreadId = data.thread?.id || null;
+            renderMessages(data.messages || []);
+        } catch {
+            body.innerHTML = '';
+            addMessage('Не удалось загрузить чат. Проверьте подключение к серверу и попробуйте еще раз.', 'bot');
+        }
+    };
+
+    const refreshChatMessages = async () => {
+        if (!window.FishSite?.request || !widget.classList.contains('chat-open')) return;
+        try {
+            const data = await window.FishSite.request('/chat/messages');
+            currentThreadId = data.thread?.id || currentThreadId;
+            renderMessages(data.messages || []);
+        } catch {
+            stopChatPolling();
+        }
+    };
+
+    const startChatPolling = () => {
+        stopChatPolling();
+        chatPollTimer = window.setInterval(refreshChatMessages, 6000);
+    };
+
+    const stopChatPolling = () => {
+        if (!chatPollTimer) return;
+        window.clearInterval(chatPollTimer);
+        chatPollTimer = null;
+    };
+
+    const sendMessage = async (message) => {
         const cleanMessage = message.trim();
         if (!cleanMessage) return;
 
         addMessage(cleanMessage, 'user');
         input.value = '';
-        addBotReply();
+        input.disabled = true;
+
+        try {
+            await window.FishSite.request('/chat/messages', {
+                method: 'POST',
+                body: JSON.stringify({ message: cleanMessage, threadId: currentThreadId })
+            });
+            const data = await window.FishSite.request('/chat/messages');
+            currentThreadId = data.thread?.id || currentThreadId;
+            renderMessages(data.messages || []);
+        } catch {
+            addMessage('Сообщение не отправилось. Попробуйте еще раз через несколько секунд.', 'bot');
+        } finally {
+            input.disabled = false;
+            input.focus();
+        }
     };
 
     trigger?.addEventListener('click', openChat);
@@ -614,6 +829,8 @@ function initConsultantChat() {
         }
     });
 
+    window.addEventListener('beforeunload', stopChatPolling);
+
     popoverClose?.addEventListener('click', (event) => {
         event.stopPropagation();
         hidePopover();
@@ -624,17 +841,41 @@ function initConsultantChat() {
         sendMessage(input.value);
     });
 
-    quickButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            sendMessage(button.dataset.message || button.textContent);
-        });
-    });
+    bindQuickActions(widget);
 
     window.setTimeout(() => {
         if (!sessionStorage.getItem('consultantChatPopoverClosed') && !widget.classList.contains('chat-open')) {
             widget.classList.add('chat-popover-visible');
         }
     }, 1800);
+}
+
+function initCatalogSearchSuggestions() {
+    if (!catalogSearchInput || document.querySelector('.catalog-search-suggestions')) return;
+
+    const suggestions = [
+        { label: 'семга', value: 'семга' },
+        { label: 'креветки', value: 'креветки' },
+        { label: 'икра', value: 'икра' },
+        { label: 'для гриля', value: 'гриль' },
+        { label: 'до 1000 руб.', value: 'до 1000' }
+    ];
+    const row = catalogSearchInput.closest('.catalog-search-row');
+    const panel = document.createElement('div');
+    panel.className = 'catalog-search-suggestions';
+    panel.setAttribute('aria-label', 'Подсказки поиска');
+    panel.innerHTML = suggestions.map(item => `
+        <button type="button" data-search="${item.value}">${item.label}</button>
+    `).join('');
+
+    row?.insertAdjacentElement('afterend', panel);
+    panel.querySelectorAll('button').forEach(button => {
+        button.addEventListener('click', () => {
+            catalogSearchInput.value = button.dataset.search || '';
+            catalogSearchInput.focus();
+            renderCurrentCatalogView();
+        });
+    });
 }
 
 function getFeaturedProducts() {
@@ -666,7 +907,7 @@ function createFeaturedProductCard(product) {
     card.dataset.category = product.category;
     card.innerHTML = `
         <div class="featured-product-visual featured-product-visual-${product.category}">
-            <span class="featured-product-icon" aria-hidden="true">${product.image}</span>
+            <span class="featured-product-icon" aria-hidden="true">${productImageMarkup(product, 'product-art-image')}</span>
             <button class="favorite-btn ${favorites.includes(product.id) ? 'active' : ''}" data-id="${product.id}" aria-label="Добавить в избранное">
                 <i class="fas fa-heart"></i>
             </button>
@@ -834,7 +1075,7 @@ function createProductCard(product) {
         </button>
         <div class="product-card-content">
             <div class="product-image">
-                <span>${product.image}</span>
+                <span>${productImageMarkup(product, 'product-art-image')}</span>
                 <small class="product-badge">${getProductBadge(product)}</small>
             </div>
             <div class="product-info">
@@ -855,6 +1096,9 @@ function createProductCard(product) {
                         <input type="text" class="quantity-input" value="1" readonly data-id="${product.id}">
                         <button class="quantity-btn plus" data-id="${product.id}">+</button>
                     </div>
+                    <a class="product-details-link" href="${getProductPageHref(product)}" aria-label="Открыть страницу товара">
+                        <i class="fas fa-arrow-up-right-from-square"></i>
+                    </a>
                     <button class="btn btn-primary add-to-cart" data-id="${product.id}">
                         <i class="fas fa-cart-plus"></i>
                     </button>
@@ -869,6 +1113,7 @@ function createProductCard(product) {
     const quantityInput = card.querySelector('.quantity-input');
     const addToCartBtn = card.querySelector('.add-to-cart');
     const favoriteBtn = card.querySelector('.favorite-btn');
+    const detailsLink = card.querySelector('.product-details-link');
     const productContent = card.querySelector('.product-card-content');
     
     minusBtn.addEventListener('click', (e) => {
@@ -889,6 +1134,10 @@ function createProductCard(product) {
     favoriteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         toggleFavorite(product.id, favoriteBtn);
+    });
+
+    detailsLink.addEventListener('click', (e) => {
+        e.stopPropagation();
     });
     
     // Открытие карточки товара при клике на контент
@@ -911,30 +1160,22 @@ function changeQuantity(productId, change, inputElement) {
 }
 
 // Добавление в корзину
-function addToCart(productId, quantity) {
+async function addToCart(productId, quantity) {
     const product = products.find(p => p.id === productId);
     
     if (!product) return;
-    
-    const existingItem = cart.find(item => item.id === productId);
-    
-    if (existingItem) {
-        existingItem.quantity += quantity;
-    } else {
-        cart.push({
-            ...product,
-            quantity: quantity
-        });
-    }
-    
+
+    cart = window.FishSite?.addToCart ? await window.FishSite.addToCart(product, quantity) : [...cart, { ...product, quantity }];
     updateCartCount();
     showNotification(`Товар "${product.name}" добавлен в корзину!`);
 }
 
 // Обновление счетчика корзины
 function updateCartCount() {
+    cart = window.FishSite?.getCart ? window.FishSite.getCart() : cart;
     cartCount = cart.reduce((total, item) => total + item.quantity, 0);
-    cartCountElement.textContent = cartCount;
+    if (cartCountElement) cartCountElement.textContent = cartCount;
+    window.FishSite?.updateCartBadges?.();
 }
 
 // Открытие модального окна корзины
@@ -952,6 +1193,7 @@ function closeCartModal() {
 
 // Рендер товаров в корзине
 function renderCartItems() {
+    cart = window.FishSite?.getCart ? window.FishSite.getCart() : cart;
     cartItems.innerHTML = '';
     
     if (cart.length === 0) {
@@ -971,7 +1213,7 @@ function renderCartItems() {
         cartItem.innerHTML = `
             <div class="cart-item-info">
                 <div class="cart-item-image">
-                    ${item.image}
+                    ${productImageMarkup(item, 'cart-item-art')}
                 </div>
                 <div class="cart-item-details">
                     <h4>${item.name}</h4>
@@ -1007,7 +1249,7 @@ function renderCartItems() {
 }
 
 // Обновление количества товара в корзине
-function updateCartItemQuantity(productId, change) {
+async function updateCartItemQuantity(productId, change) {
     const item = cart.find(item => item.id === productId);
     
     if (!item) return;
@@ -1015,16 +1257,21 @@ function updateCartItemQuantity(productId, change) {
     item.quantity += change;
     
     if (item.quantity < 1) {
-        removeFromCart(productId);
+        await removeFromCart(productId);
     } else {
+        if (window.FishSite?.updateCartItem) {
+            cart = await window.FishSite.updateCartItem(productId, change);
+        } else if (window.FishSite?.setCart) {
+            cart = await window.FishSite.setCart(cart);
+        }
         updateCartCount();
         renderCartItems();
     }
 }
 
 // Удаление из корзины
-function removeFromCart(productId) {
-    cart = cart.filter(item => item.id !== productId);
+async function removeFromCart(productId) {
+    cart = window.FishSite?.removeFromCart ? await window.FishSite.removeFromCart(productId) : cart.filter(item => item.id !== productId);
     updateCartCount();
     renderCartItems();
     showNotification('Товар удален из корзины');
@@ -1032,76 +1279,305 @@ function removeFromCart(productId) {
 
 // Обработчик фильтров
 function handleFilterClick(e) {
-    const category = e.target.dataset.category;
+    const button = e.target.closest('.filter-btn');
+    const category = button?.dataset.category;
     
     // Обновляем активную кнопку
     filterButtons.forEach(btn => btn.classList.remove('active'));
-    e.target.classList.add('active');
-    
-    const filteredProducts = filterProductsByCategory(category);
-    
-    // Применяем сортировку
-    const sortedProducts = applySorting(filteredProducts, sortSelect?.value || 'popular');
-    renderProducts(sortedProducts);
+    button?.classList.add('active');
+    renderCurrentCatalogView(category);
 }
 
 // Обработчик сортировки
 function handleSortChange() {
-    const currentFilter = document.querySelector('.filter-btn.active')?.dataset.category || 'all';
-    const filteredProducts = filterProductsByCategory(currentFilter);
-    
-    const sortedProducts = applySorting(filteredProducts, sortSelect?.value || 'popular');
-    renderProducts(sortedProducts);
+    renderCurrentCatalogView();
+}
+
+async function renderCurrentCatalogView(forcedCategory) {
+    const currentFilter = forcedCategory || document.querySelector('.filter-btn.active')?.dataset.category || 'all';
+    let sourceProducts = products;
+    const search = catalogSearchInput?.value.trim() || '';
+    const requestId = ++catalogSearchRequestId;
+
+    if (search && window.FishSite?.searchProducts) {
+        try {
+            sourceProducts = await window.FishSite.searchProducts(search);
+            if (requestId !== catalogSearchRequestId) return;
+        } catch {
+            sourceProducts = products;
+        }
+    }
+
+    const filteredProducts = applyCatalogControls(filterProductsByCategory(currentFilter, sourceProducts));
+    renderProducts(applySorting(filteredProducts, sortSelect?.value || 'popular'));
+}
+
+function applyCatalogControls(items) {
+    const search = catalogSearchInput?.value.trim() || '';
+    const query = buildCatalogSearchQuery(search);
+    const maxPrice = Number(priceRangeInput?.value || Infinity);
+
+    catalogSearchScores.clear();
+
+    return items.filter(product => {
+        const searchScore = query ? scoreCatalogProduct(product, query) : 0;
+        const matchesSearch = !query || searchScore > 0;
+        if (matchesSearch && query) {
+            catalogSearchScores.set(product.id, searchScore);
+        }
+        return matchesSearch && Number(product.price) <= maxPrice;
+    });
+}
+
+function buildCatalogSearchQuery(search) {
+    const normalized = normalizeSearchText(search);
+    const tokens = tokenizeSearchText(search);
+
+    if (!tokens.length) return null;
+
+    return {
+        phrase: normalized,
+        phraseVariants: expandSearchPhrase(normalized),
+        tokens: tokens.map(token => ({
+            value: token,
+            variants: expandSearchToken(token)
+        }))
+    };
+}
+
+function expandSearchPhrase(phrase) {
+    return [...new Set([
+        phrase,
+        normalizeSearchText(convertKeyboardLayout(phrase, 'enToRu')),
+        normalizeSearchText(convertKeyboardLayout(phrase, 'ruToEn'))
+    ].filter(Boolean))];
+}
+
+function expandSearchToken(token) {
+    const variants = new Set([
+        token,
+        stemSearchToken(token),
+        normalizeSearchText(convertKeyboardLayout(token, 'enToRu')),
+        normalizeSearchText(convertKeyboardLayout(token, 'ruToEn'))
+    ]);
+
+    (SEARCH_SYNONYMS[token] || []).forEach(alias => {
+        variants.add(alias);
+        variants.add(stemSearchToken(alias));
+    });
+
+    return [...variants].filter(value => value && value.length > 1);
+}
+
+function scoreCatalogProduct(product, query) {
+    const index = getCatalogSearchIndex(product);
+    let totalScore = 0;
+
+    query.phraseVariants.forEach(phrase => {
+        if (phrase.length > 2 && index.full.includes(phrase)) {
+            totalScore += phrase.length > 8 ? 120 : 70;
+        }
+    });
+
+    const tokenScores = query.tokens.map(tokenQuery => scoreCatalogToken(index, tokenQuery.variants));
+
+    if (tokenScores.some(score => score <= 0)) {
+        return 0;
+    }
+
+    totalScore += tokenScores.reduce((sum, score) => sum + score, 0);
+    return totalScore;
+}
+
+function scoreCatalogToken(index, variants) {
+    let bestScore = 0;
+
+    index.fields.forEach(field => {
+        variants.forEach(variant => {
+            if (!variant) return;
+
+            if (field.text.includes(variant)) {
+                bestScore = Math.max(bestScore, field.weight);
+            }
+
+            if (field.tokens.has(variant)) {
+                bestScore = Math.max(bestScore, field.weight + 18);
+            }
+
+            field.tokenList.forEach(token => {
+                if (token.startsWith(variant) || variant.startsWith(token)) {
+                    bestScore = Math.max(bestScore, field.weight * 0.82);
+                }
+
+                if (isCloseSearchToken(token, variant)) {
+                    bestScore = Math.max(bestScore, field.weight * 0.68);
+                }
+            });
+        });
+    });
+
+    return bestScore;
+}
+
+function getCatalogSearchIndex(product) {
+    const categoryName = getCategoryName(product.category);
+    const badge = getProductBadge(product);
+    const fields = [
+        { value: product.name, weight: 64 },
+        { value: categoryName, weight: 42 },
+        { value: badge, weight: 30 },
+        { value: product.origin, weight: 28 },
+        { value: product.description, weight: 24 },
+        { value: product.weight, weight: 14 },
+        { value: product.storage, weight: 12 },
+        { value: `${product.price} ${product.price}руб ${product.price} рублей`, weight: 10 }
+    ].map(field => {
+        const text = normalizeSearchText(field.value);
+        const tokenList = tokenizeSearchText(text).flatMap(token => [token, stemSearchToken(token)]);
+        const uniqueTokens = [...new Set(tokenList.filter(Boolean))];
+        return {
+            ...field,
+            text,
+            tokenList: uniqueTokens,
+            tokens: new Set(uniqueTokens)
+        };
+    });
+
+    return {
+        fields,
+        full: fields.map(field => field.text).join(' ')
+    };
+}
+
+function normalizeSearchText(value) {
+    return String(value || '')
+        .toLowerCase()
+        .replace(/ё/g, 'е')
+        .replace(/[#№]/g, ' ')
+        .replace(/[^a-zа-я0-9]+/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function tokenizeSearchText(value) {
+    return normalizeSearchText(value)
+        .split(' ')
+        .map(token => token.trim())
+        .filter(token => token.length > 1);
+}
+
+function stemSearchToken(token) {
+    if (!token || token.length < 5) return token;
+
+    return token.replace(
+        /(ами|ями|ого|ему|ыми|ими|ая|яя|ое|ее|ые|ие|ый|ий|ой|ом|ем|ам|ям|ах|ях|ов|ев|ей|ую|юю|а|я|ы|и|у|ю|е|о)$/i,
+        ''
+    );
+}
+
+function isCloseSearchToken(token, query) {
+    if (!token || !query || token.length < 4 || query.length < 4) return false;
+
+    const lengthDelta = Math.abs(token.length - query.length);
+    const maxDistance = Math.min(token.length, query.length) >= 7 ? 2 : 1;
+
+    return lengthDelta <= maxDistance && levenshteinDistance(token, query, maxDistance) <= maxDistance;
+}
+
+function levenshteinDistance(source, target, limit = Infinity) {
+    if (source === target) return 0;
+    if (Math.abs(source.length - target.length) > limit) return limit + 1;
+
+    let previous = Array.from({ length: target.length + 1 }, (_, index) => index);
+
+    for (let i = 1; i <= source.length; i += 1) {
+        const current = [i];
+        let rowMin = current[0];
+
+        for (let j = 1; j <= target.length; j += 1) {
+            const cost = source[i - 1] === target[j - 1] ? 0 : 1;
+            const value = Math.min(
+                previous[j] + 1,
+                current[j - 1] + 1,
+                previous[j - 1] + cost
+            );
+            current[j] = value;
+            rowMin = Math.min(rowMin, value);
+        }
+
+        if (rowMin > limit) return limit + 1;
+        previous = current;
+    }
+
+    return previous[target.length];
+}
+
+function convertKeyboardLayout(value, direction) {
+    const en = "`qwertyuiop[]asdfghjkl;'zxcvbnm,.";
+    const ru = "ёйцукенгшщзхъфывапролджэячсмитьбю";
+    const from = direction === 'enToRu' ? en : ru;
+    const to = direction === 'enToRu' ? ru : en;
+    const map = new Map([...from].map((char, index) => [char, to[index] || char]));
+
+    return String(value || '')
+        .toLowerCase()
+        .split('')
+        .map(char => map.get(char) || char)
+        .join('');
 }
 
 function applyInitialCategoryFilter() {
     if (!productsGrid || !filterButtons.length) return;
 
-    const selectedCategory = localStorage.getItem('selectedCategory');
+    const selectedCategory = new URLSearchParams(window.location.search).get('category');
     if (!selectedCategory) return;
 
     const selectedButton = document.querySelector(`.filter-btn[data-category="${selectedCategory}"]`);
-    localStorage.removeItem('selectedCategory');
 
     if (!selectedButton) return;
 
     filterButtons.forEach(button => button.classList.remove('active'));
     selectedButton.classList.add('active');
 
-    const filteredProducts = filterProductsByCategory(selectedCategory);
+    const filteredProducts = applyCatalogControls(filterProductsByCategory(selectedCategory));
 
     renderProducts(applySorting(filteredProducts, sortSelect?.value || 'popular'));
 }
 
-function filterProductsByCategory(category) {
+function filterProductsByCategory(category, sourceProducts = products) {
     switch (category) {
         case 'premium':
-            return products.filter(product => product.price >= 1100 || [3, 8, 11].includes(product.id));
+            return sourceProducts.filter(product => product.price >= 1100 || [3, 8, 11].includes(product.id));
         case 'restaurant':
-            return products.filter(product => ['seafood', 'fillets'].includes(product.category) || product.weight.includes('кг'));
+            return sourceProducts.filter(product => ['seafood', 'fillets'].includes(product.category) || product.weight.includes('кг'));
         case 'fresh-catch':
-            return products.filter(product => product.category === 'fresh');
+            return sourceProducts.filter(product => product.category === 'fresh');
         case 'all':
         default:
-            if (!category || category === 'all') return products;
-            return products.filter(product => product.category === category);
+            if (!category || category === 'all') return sourceProducts;
+            return sourceProducts.filter(product => product.category === category);
     }
 }
 
 // Применение сортировки
 function applySorting(productsToSort, sortType) {
     const sorted = [...productsToSort];
+    const hasActiveSearch = Boolean(catalogSearchInput?.value.trim());
+    const compareBySearchRelevance = (a, b) => {
+        if (!hasActiveSearch) return 0;
+        return (catalogSearchScores.get(b.id) || 0) - (catalogSearchScores.get(a.id) || 0);
+    };
     
     switch (sortType) {
         case 'price-asc':
-            return sorted.sort((a, b) => a.price - b.price);
+            return sorted.sort((a, b) => compareBySearchRelevance(a, b) || a.price - b.price);
         case 'price-desc':
-            return sorted.sort((a, b) => b.price - a.price);
+            return sorted.sort((a, b) => compareBySearchRelevance(a, b) || b.price - a.price);
         case 'name':
-            return sorted.sort((a, b) => a.name.localeCompare(b.name));
+            return sorted.sort((a, b) => compareBySearchRelevance(a, b) || a.name.localeCompare(b.name));
         case 'popular':
         default:
-            return sorted.sort((a, b) => (b.popular ? 1 : 0) - (a.popular ? 1 : 0));
+            return sorted.sort((a, b) => compareBySearchRelevance(a, b) || (b.popular ? 1 : 0) - (a.popular ? 1 : 0));
     }
 }
 
@@ -1133,31 +1609,42 @@ function toggleMobileMenu() {
 }
 
 // Обработчик формы обратной связи
-function handleContactFormSubmit(e) {
+async function handleContactFormSubmit(e) {
     e.preventDefault();
     
     const name = document.getElementById('name').value;
     const email = document.getElementById('email').value;
     const message = document.getElementById('message').value;
     
-    // Здесь должна быть логика отправки формы
-    console.log('Данные формы:', { name, email, message });
-    
-    showNotification('Сообщение отправлено! Мы свяжемся с вами в ближайшее время.');
-    e.target.reset();
+    try {
+        await window.FishSite.request('/contact-requests', {
+            method: 'POST',
+            body: JSON.stringify({ name, email, message })
+        });
+        showNotification('Сообщение отправлено! Мы свяжемся с вами в ближайшее время.');
+        e.target.reset();
+    } catch (error) {
+        showNotification(error.message || 'Не удалось отправить сообщение', 'error');
+    }
 }
 
 // Обработчик формы доставки
-function handleDeliveryFormSubmit(e) {
+async function handleDeliveryFormSubmit(e) {
     e.preventDefault();
     
     const address = document.getElementById('address').value;
     const deliveryTime = document.getElementById('delivery-time').value;
     
-    // Здесь должна быть логика расчета доставки
-    console.log('Данные доставки:', { address, deliveryTime });
-    
-    showNotification('Стоимость доставки рассчитана! Менеджер свяжется с вами для уточнения деталей.');
+    try {
+        const result = await window.FishSite.request('/delivery-requests', {
+            method: 'POST',
+            body: JSON.stringify({ address, deliveryTime })
+        });
+        showNotification(`Предварительная стоимость доставки: ${result.estimatedPrice} руб. Менеджер уточнит детали.`);
+        e.target.reset();
+    } catch (error) {
+        showNotification(error.message || 'Не удалось рассчитать доставку', 'error');
+    }
 }
 
 // Создание эффекта всплеска для аквариума
@@ -1195,44 +1682,31 @@ function closeAuthModal() {
     document.body.style.overflow = '';
 }
 
-function handleAuthSubmit(e) {
+async function handleAuthSubmit(e) {
     e.preventDefault();
     
     const email = document.getElementById('auth-email').value;
     const password = document.getElementById('auth-password').value;
-    const rememberMe = document.getElementById('remember-me').checked;
-    const isAdminEmail = email.trim().toLowerCase() === 'admin@fishsite.local';
-    
-    // Здесь должна быть реальная логика авторизации
-    // Для примера используем простую проверку
-    if (email && password) {
-        // Симуляция успешной авторизации
-        const userData = {
-            name: isAdminEmail ? "Администратор" : "Ольга Ивановна",
-            email: email,
-            initials: isAdminEmail ? "АД" : email.substring(0, 2).toUpperCase(),
-            role: isAdminEmail ? "admin" : "customer"
-        };
-        
-        // Сохраняем данные пользователя
-        localStorage.setItem('user', JSON.stringify(userData));
-        if (rememberMe) {
-            localStorage.setItem('rememberMe', 'true');
-        }
-        
-        // Обновляем интерфейс
-        updateUserInterface(userData);
-        
-        // Закрываем модальное окно
-        closeAuthModal();
-        
-        // Показываем уведомление
-        showNotification('Вы успешно вошли в систему!');
-        
-        // Очищаем форму
-        authForm.reset();
-    } else {
+
+    if (!email || !password) {
         showNotification('Пожалуйста, заполните все поля', 'error');
+        return;
+    }
+
+    try {
+        const userData = await window.FishSite.login(email, password);
+        updateUserInterface(userData);
+        favorites = window.FishSite?.getFavoriteIds ? window.FishSite.getFavoriteIds() : [];
+        cart = window.FishSite?.getCart ? window.FishSite.getCart() : cart;
+        renderFeaturedCarousel();
+        renderCurrentCatalogView();
+        updateCartCount();
+        updateFavoritesCount();
+        closeAuthModal();
+        showNotification('Вы успешно вошли в систему!');
+        authForm.reset();
+    } catch (error) {
+        showNotification(error.message || 'Не удалось войти', 'error');
     }
 }
 
@@ -1240,18 +1714,16 @@ function toggleUserDropdown() {
     userDropdown.classList.toggle('active');
 }
 
-function handleLogout() {
-    // Удаляем данные пользователя
-    localStorage.removeItem('user');
-    localStorage.removeItem('rememberMe');
-    
-    // Обновляем интерфейс
+async function handleLogout() {
+    await window.FishSite?.logout?.();
+    cart = window.FishSite?.getCart ? window.FishSite.getCart() : [];
+    favorites = window.FishSite?.getFavoriteIds ? window.FishSite.getFavoriteIds() : [];
     updateUserInterface(null);
-    
-    // Закрываем меню
     userDropdown.classList.remove('active');
-    
-    // Показываем уведомление
+    updateCartCount();
+    updateFavoritesCount();
+    renderFeaturedCarousel();
+    renderCurrentCatalogView();
     showNotification('Вы успешно вышли из системы');
 }
 
@@ -1369,7 +1841,7 @@ function showPasswordResetModal() {
         openAuthModal();
     });
     
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('reset-email').value;
         
@@ -1452,7 +1924,7 @@ function showRegistrationModal() {
         openAuthModal();
     });
     
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const name = document.getElementById('reg-name').value;
@@ -1467,19 +1939,16 @@ function showRegistrationModal() {
         }
         
         if (name && email && phone && password) {
-            // Симуляция успешной регистрации
-            const userData = {
-                name: name,
-                email: email,
-                initials: name.substring(0, 2).toUpperCase(),
-                role: 'customer'
-            };
-            
-            localStorage.setItem('user', JSON.stringify(userData));
-            updateUserInterface(userData);
-            
-            showNotification('Регистрация прошла успешно! Добро пожаловать!');
-            modal.remove();
+            try {
+                const userData = await window.FishSite.registerUser({ name, email, phone, password });
+                updateUserInterface(userData);
+                favorites = window.FishSite?.getFavoriteIds ? window.FishSite.getFavoriteIds() : [];
+                updateFavoritesCount();
+                showNotification('Регистрация прошла успешно! Добро пожаловать!');
+                modal.remove();
+            } catch (error) {
+                showNotification(error.message || 'Не удалось зарегистрироваться', 'error');
+            }
         }
     });
     
@@ -1498,37 +1967,20 @@ function showRegistrationModal() {
 
 // Проверяем авторизацию при загрузке страницы
 function checkAuth() {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-        updateUserInterface(JSON.parse(userData));
-    }
+    updateUserInterface(window.FishSite?.getCurrentUser ? window.FishSite.getCurrentUser() : null);
 }
 
 // Избранное
-function toggleFavorite(productId, button) {
-    const index = favorites.indexOf(productId);
-    
-    if (index === -1) {
-        // Добавляем в избранное
-        favorites.push(productId);
-        button.classList.add('active');
-        showNotification('Товар добавлен в избранное');
-    } else {
-        // Удаляем из избранного
-        favorites.splice(index, 1);
-        button.classList.remove('active');
-        showNotification('Товар удален из избранного');
-    }
-    
-    // Сохраняем в localStorage
-    localStorage.setItem('favorites', JSON.stringify(favorites));
+async function toggleFavorite(productId, button) {
+    const result = await window.FishSite.toggleFavorite(productId);
+    favorites = window.FishSite.getFavoriteIds();
 
     document.querySelectorAll(`.favorite-btn[data-id="${productId}"]`).forEach(favoriteButton => {
         favoriteButton.classList.toggle('active', favorites.includes(productId));
     });
-    
-    // Обновляем счетчик в меню пользователя
+
     updateFavoritesCount();
+    showNotification(result.active ? 'Товар добавлен в избранное' : 'Товар удален из избранного');
 }
 
 function updateFavoritesCount() {
@@ -1547,9 +1999,148 @@ function updateFavoritesCount() {
 }
 
 // Оформление заказа
+function setupCheckoutWizard() {
+    if (!checkoutForm || checkoutWizardReady) return;
+
+    checkoutWizardReady = true;
+    checkoutForm.classList.add('checkout-wizard-form');
+
+    const stepper = document.createElement('div');
+    stepper.className = 'checkout-stepper';
+    stepper.innerHTML = checkoutSteps.map((step, index) => `
+        <button type="button" class="checkout-step" data-step="${index}">
+            <span>${index + 1}</span>
+            ${step.label}
+        </button>
+    `).join('');
+    checkoutForm.prepend(stepper);
+
+    const cartReview = document.createElement('section');
+    cartReview.className = 'checkout-step-panel checkout-cart-review';
+    cartReview.dataset.checkoutStep = '0';
+    checkoutForm.insertBefore(cartReview, stepper.nextSibling);
+
+    const fields = [
+        ['checkout-name', 1],
+        ['checkout-phone', 1],
+        ['checkout-email', 1],
+        ['checkout-address', 2],
+        ['checkout-comment', 2],
+        ['checkout-payment', 2]
+    ];
+    fields.forEach(([id, step]) => {
+        const field = document.getElementById(id)?.closest('.form-group');
+        if (field) {
+            field.classList.add('checkout-step-panel');
+            field.dataset.checkoutStep = step;
+        }
+    });
+
+    const orderSummary = checkoutForm.querySelector('.order-summary');
+    orderSummary?.classList.add('checkout-step-panel', 'checkout-confirm-panel');
+    if (orderSummary) orderSummary.dataset.checkoutStep = '3';
+
+    const submitButton = checkoutForm.querySelector('button[type="submit"]');
+    submitButton?.classList.add('checkout-submit-btn');
+
+    const navigation = document.createElement('div');
+    navigation.className = 'checkout-wizard-actions';
+    navigation.innerHTML = `
+        <button type="button" class="btn btn-outline checkout-prev">Назад</button>
+        <button type="button" class="btn btn-primary checkout-next">Продолжить</button>
+    `;
+    checkoutForm.insertBefore(navigation, submitButton);
+}
+
+function updateCheckoutWizard() {
+    if (!checkoutForm) return;
+
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const cartReview = checkoutForm.querySelector('.checkout-cart-review');
+    if (cartReview) {
+        cartReview.innerHTML = `
+            <h3>Проверьте корзину</h3>
+            <div class="checkout-cart-items">
+                ${cart.map(item => `
+                    <div class="checkout-cart-item">
+                        ${productImageMarkup(item, 'checkout-cart-image')}
+                        <div>
+                            <strong>${item.name}</strong>
+                            <span>${item.quantity} x ${item.price} руб.</span>
+                        </div>
+                        <b>${(item.quantity * item.price).toLocaleString()} руб.</b>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="checkout-cart-total">
+                <span>Итого</span>
+                <strong>${total.toLocaleString()} руб.</strong>
+            </div>
+        `;
+    }
+
+    checkoutForm.querySelectorAll('.checkout-step-panel').forEach(panel => {
+        panel.classList.toggle('active', Number(panel.dataset.checkoutStep) === checkoutStep);
+    });
+    checkoutForm.querySelectorAll('.checkout-step').forEach(button => {
+        const index = Number(button.dataset.step);
+        button.classList.toggle('active', index === checkoutStep);
+        button.classList.toggle('completed', index < checkoutStep);
+    });
+
+    checkoutForm.querySelector('.checkout-prev')?.toggleAttribute('disabled', checkoutStep === 0);
+    const nextButton = checkoutForm.querySelector('.checkout-next');
+    if (nextButton) nextButton.style.display = checkoutStep === checkoutSteps.length - 1 ? 'none' : '';
+    const submitButton = checkoutForm.querySelector('.checkout-submit-btn');
+    if (submitButton) submitButton.style.display = checkoutStep === checkoutSteps.length - 1 ? '' : 'none';
+}
+
+function validateCheckoutStep() {
+    const activeFields = checkoutForm?.querySelectorAll(`.checkout-step-panel[data-checkout-step="${checkoutStep}"] input[required], .checkout-step-panel[data-checkout-step="${checkoutStep}"] textarea[required], .checkout-step-panel[data-checkout-step="${checkoutStep}"] select[required]`) || [];
+    for (const field of activeFields) {
+        if (!field.checkValidity()) {
+            field.reportValidity();
+            return false;
+        }
+    }
+    return true;
+}
+
+function handleCheckoutWizardClick(event) {
+    const stepButton = event.target.closest('.checkout-step');
+    const prevButton = event.target.closest('.checkout-prev');
+    const nextButton = event.target.closest('.checkout-next');
+
+    if (stepButton) {
+        const nextStep = Number(stepButton.dataset.step);
+        if (nextStep <= checkoutStep || validateCheckoutStep()) {
+            checkoutStep = nextStep;
+            updateCheckoutWizard();
+        }
+    }
+
+    if (prevButton) {
+        checkoutStep = Math.max(0, checkoutStep - 1);
+        updateCheckoutWizard();
+    }
+
+    if (nextButton && validateCheckoutStep()) {
+        checkoutStep = Math.min(checkoutSteps.length - 1, checkoutStep + 1);
+        updateCheckoutWizard();
+    }
+}
+
 function openCheckoutModal() {
+    cart = window.FishSite?.getCart ? window.FishSite.getCart() : cart;
+    if (!cart.length) {
+        showNotification('Добавьте товары в корзину перед оформлением', 'warning');
+        return;
+    }
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     checkoutTotal.textContent = total + ' руб.';
+    setupCheckoutWizard();
+    checkoutStep = 0;
+    updateCheckoutWizard();
     closeCartModal();
     checkoutModal.classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -1560,7 +2151,7 @@ function closeCheckoutModal() {
     document.body.style.overflow = '';
 }
 
-function handleCheckoutSubmit(e) {
+async function handleCheckoutSubmit(e) {
     e.preventDefault();
     
     const name = document.getElementById('checkout-name').value;
@@ -1570,18 +2161,20 @@ function handleCheckoutSubmit(e) {
     const comment = document.getElementById('checkout-comment').value;
     const payment = document.getElementById('checkout-payment').value;
     
-    // Здесь должна быть логика отправки заказа
-    console.log('Данные заказа:', { name, phone, email, address, comment, payment, cart });
-    
-    // Очищаем корзину после оформления заказа
-    cart = [];
-    updateCartCount();
-    
-    closeCheckoutModal();
-    showNotification('Заказ успешно оформлен! Мы свяжемся с вами в ближайшее время для подтверждения.');
-    
-    // Очищаем форму
-    checkoutForm.reset();
+    try {
+        cart = window.FishSite?.getCart ? window.FishSite.getCart() : cart;
+        const order = await window.FishSite.request('/orders', {
+            method: 'POST',
+            body: JSON.stringify({ name, phone, email, address, comment, payment })
+        });
+        cart = window.FishSite?.clearCart ? await window.FishSite.clearCart() : [];
+        updateCartCount();
+        closeCheckoutModal();
+        showNotification(`Заказ ${order.id} оформлен! Мы свяжемся с вами для подтверждения.`);
+        checkoutForm.reset();
+    } catch (error) {
+        showNotification(error.message || 'Не удалось оформить заказ', 'error');
+    }
 }
 
 // Модальное окно товара
@@ -1590,36 +2183,40 @@ function openProductModal(productId) {
     if (!product) return;
     
     productModalContainer.innerHTML = `
-        <div class="product-modal-image">
-            <button class="favorite-btn ${favorites.includes(product.id) ? 'active' : ''}" data-id="${product.id}">
-                <i class="fas fa-heart"></i>
-            </button>
-            <div class="product-image-large">
-                ${product.image}
+        <div class="product-modal-hero-row">
+        <div class="product-modal-media-panel">
+            <div class="product-modal-image">
+                <button class="favorite-btn ${favorites.includes(product.id) ? 'active' : ''}" data-id="${product.id}" aria-label="Добавить в избранное">
+                    <i class="fas fa-heart"></i>
+                </button>
+                <div class="product-image-large">
+                    ${productImageMarkup(product, 'product-modal-art')}
+                </div>
+                <div class="product-modal-image-caption">
+                    <span>${getProductBadge(product)}</span>
+                    <strong>${product.storage}</strong>
+                </div>
+            </div>
+            <div class="product-modal-assurance" aria-label="Гарантии по товару">
+                <span><i class="fas fa-temperature-low"></i> Холодная цепь</span>
+                <span><i class="fas fa-location-dot"></i> ${product.origin}</span>
             </div>
         </div>
         <div class="product-modal-info">
             <div class="product-header">
                 <span class="product-category">${getCategoryName(product.category)}</span>
                 <h2 class="product-title">${product.name}</h2>
-                <div class="product-rating">
-                    <div class="stars">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star-half-alt"></i>
-                    </div>
-                    <span class="rating-value">4.5</span>
-                    <span class="reviews-count">(24 отзыва)</span>
+                <p class="product-modal-lead">${product.description}</p>
+                <div class="product-modal-tags" aria-label="Ключевые свойства товара">
+                    <span>${product.weight}</span>
+                    <span>${product.shelfLife}</span>
+                    <span>${product.origin}</span>
                 </div>
+                <a class="product-page-link" href="${getProductPageHref(product)}">
+                    Открыть полную страницу товара <i class="fas fa-arrow-right"></i>
+                </a>
             </div>
-            
-            <div class="product-description">
-                <h3>Описание</h3>
-                <p>${product.description}</p>
-            </div>
-            
+
             <div class="product-details">
                 <h3>Характеристики</h3>
                 <div class="details-grid">
@@ -1644,7 +2241,7 @@ function openProductModal(productId) {
             
             <div class="product-price-section">
                 <div class="price-info">
-                    <span class="price-label">Цена:</span>
+                    <span class="price-label">Цена</span>
                     <span class="product-price-large">${product.price} руб./кг</span>
                 </div>
                 <div class="product-quantity">
@@ -1664,10 +2261,30 @@ function openProductModal(productId) {
                     <i class="fas fa-bolt"></i> Купить сейчас
                 </button>
             </div>
+        </div>
+        </div>
             
+        <div class="product-modal-extra-grid">
             <div class="product-tips">
-                <h3>Совет от шефа</h3>
-                <p>${getCookingTip(product.category)}</p>
+                <div class="product-tip-icon"><i class="fas fa-utensils"></i></div>
+                <div>
+                    <h3>Совет от шефа</h3>
+                    <p>${getCookingTip(product.category)}</p>
+                </div>
+            </div>
+            <div class="product-tips">
+                <div class="product-tip-icon"><i class="fas fa-leaf"></i></div>
+                <div>
+                    <h3>КБЖУ и состав</h3>
+                    <p>${getNutritionInfo(product.category)}</p>
+                </div>
+            </div>
+            <div class="product-tips">
+                <div class="product-tip-icon"><i class="fas fa-scissors"></i></div>
+                <div>
+                    <h3>Разделка</h3>
+                    <p>${getCuttingInfo(product.category)}</p>
+                </div>
             </div>
         </div>
     `;
@@ -1705,6 +2322,31 @@ function openProductModal(productId) {
     
     productModal.classList.add('active');
     document.body.style.overflow = 'hidden';
+}
+
+function getProductPageHref(product) {
+    const prefix = window.location.pathname.includes('/pages/') ? '' : 'pages/';
+    return `${prefix}product.html?id=${encodeURIComponent(product.id)}`;
+}
+
+function getNutritionInfo(category) {
+    const info = {
+        fresh: 'Натуральная рыба без добавок. В среднем 18-22 г белка на 100 г, жирность зависит от вида и партии.',
+        frozen: 'Состав: рыба, быстрая заморозка. Белок 16-20 г на 100 г, без искусственных усилителей вкуса.',
+        seafood: 'Морепродукты с высоким содержанием белка и минералов. Точные значения зависят от позиции.',
+        fillets: 'Филе без лишней обработки, подходит для диетического рациона и быстрого приготовления.'
+    };
+    return info[category] || 'Состав и пищевая ценность уточняются по партии поставки.';
+}
+
+function getCuttingInfo(category) {
+    const info = {
+        fresh: 'По запросу подскажем формат: целиком, стейки, филе или подготовка под запекание.',
+        frozen: 'Поставляется в стабильной заморозке, формат зависит от конкретной позиции.',
+        seafood: 'Перед приготовлением достаточно корректно разморозить или прогреть по инструкции.',
+        fillets: 'Удобный формат без лишней подготовки: разморозить, обсушить и готовить.'
+    };
+    return info[category] || 'Формат разделки уточняется при подтверждении заказа.';
 }
 
 function closeProductModalWindow() {

@@ -4,21 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRM администратора | Морские Дары</title>
+    <link rel="icon" type="image/png" href="../assets/images/logo-morskie-dary.png?v=4">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="../css/styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/orders.css">
-    <link rel="stylesheet" href="../css/luxury.css">
+    <link rel="stylesheet" href="../css/luxury.css?v=12">
 </head>
 <body>
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <div class="logo">
-                    <h1>Морские Дары</h1>
-                    <p>CRM администратора</p>
-                </div>
+                <a class="logo logo-link" href="../index.html" aria-label="Морские Дары — на главную">
+                    <img class="logo-mark" src="../assets/images/logo-morskie-dary.png?v=4" alt="" aria-hidden="true">
+                    <div class="logo-text">
+                        <h1>Морские Дары</h1>
+                        <p>CRM администратора</p>
+                    </div>
+                </a>
 
                 <nav class="nav">
                     <ul class="nav-list">
@@ -84,9 +89,17 @@
                             <i class="fas fa-box"></i>
                             Заказы
                         </button>
+                        <button class="admin-nav-btn" data-admin-view="products">
+                            <i class="fas fa-fish"></i>
+                            Товары
+                        </button>
                         <button class="admin-nav-btn" data-admin-view="clients">
                             <i class="fas fa-users"></i>
                             Клиенты
+                        </button>
+                        <button class="admin-nav-btn" data-admin-view="chat">
+                            <i class="fas fa-comments"></i>
+                            Чат
                         </button>
                         <button class="admin-nav-btn" data-admin-view="ratings">
                             <i class="fas fa-star"></i>
@@ -142,6 +155,82 @@
                             </div>
                         </div>
 
+                        <div class="admin-view" id="admin-view-products">
+                            <div class="admin-panel admin-product-editor">
+                                <div class="admin-panel-head">
+                                    <span>Catalog editor</span>
+                                    <h2>Управление товарами</h2>
+                                </div>
+                                <form class="admin-product-form" id="adminProductForm">
+                                    <input type="hidden" id="adminProductId">
+                                    <label>Название
+                                        <input type="text" id="adminProductName" required>
+                                    </label>
+                                    <label>Категория
+                                        <select id="adminProductCategory">
+                                            <option value="fresh">Охлажденная рыба</option>
+                                            <option value="frozen">Замороженная рыба</option>
+                                            <option value="seafood">Морепродукты</option>
+                                            <option value="fillets">Филе и стейки</option>
+                                        </select>
+                                    </label>
+                                    <label>Цена, руб.
+                                        <input type="number" id="adminProductPrice" min="1" required>
+                                    </label>
+                                    <label>Наличие, кг/шт.
+                                        <input type="number" id="adminProductStock" min="0" step="0.1">
+                                    </label>
+                                    <label>Популярность
+                                        <input type="number" id="adminProductPopularity" min="0" step="1">
+                                    </label>
+                                    <label>Фото/путь
+                                        <input type="text" id="adminProductImage" placeholder="assets/images/product-01-salmon.png">
+                                    </label>
+                                    <label>Загрузить фото
+                                        <input type="file" id="adminProductImageFile" accept="image/png,image/jpeg,image/webp">
+                                    </label>
+                                    <label class="admin-product-wide">Описание
+                                        <textarea id="adminProductDescription" rows="3"></textarea>
+                                    </label>
+                                    <label>Вес
+                                        <input type="text" id="adminProductWeight" placeholder="1 кг">
+                                    </label>
+                                    <label>Происхождение
+                                        <input type="text" id="adminProductOrigin">
+                                    </label>
+                                    <label>Хранение
+                                        <input type="text" id="adminProductStorage">
+                                    </label>
+                                    <label>
+                                        Популярный товар
+                                        <input type="checkbox" id="adminProductPopular">
+                                    </label>
+                                    <label>
+                                        Активен
+                                        <input type="checkbox" id="adminProductActive" checked>
+                                    </label>
+                                    <div class="admin-product-actions">
+                                        <button class="btn btn-primary" type="submit">Сохранить товар</button>
+                                        <button class="btn btn-outline" type="button" id="adminProductReset">Новый товар</button>
+                                    </div>
+                                </form>
+                                <div class="admin-table-wrap">
+                                    <table class="orders-table admin-crm-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Товар</th>
+                                                <th>Категория</th>
+                                                <th>Цена</th>
+                                                <th>Наличие</th>
+                                                <th>Действие</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="adminProductsBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="admin-view" id="admin-view-clients">
                             <div class="admin-panel">
                                 <div class="admin-panel-head">
@@ -149,6 +238,36 @@
                                     <h2>Клиентская база</h2>
                                 </div>
                                 <div class="admin-client-list" id="adminClientList"></div>
+                            </div>
+                        </div>
+
+                        <div class="admin-view" id="admin-view-chat">
+                            <div class="admin-panel admin-chat-panel">
+                                <div class="admin-panel-head admin-panel-head-row">
+                                    <div>
+                                        <span>Concierge chat</span>
+                                        <h2>Чат с клиентами</h2>
+                                    </div>
+                                    <button class="btn btn-outline" type="button" id="adminChatRefresh">
+                                        <i class="fas fa-rotate"></i> Обновить
+                                    </button>
+                                </div>
+                                <div class="admin-chat-layout">
+                                    <aside class="admin-chat-thread-list" id="adminChatThreads"></aside>
+                                    <section class="admin-chat-conversation">
+                                        <div class="admin-chat-conversation-head" id="adminChatHead">
+                                            <span>Выберите диалог</span>
+                                            <strong>Сообщения появятся здесь</strong>
+                                        </div>
+                                        <div class="admin-chat-messages" id="adminChatMessages"></div>
+                                        <form class="admin-chat-form" id="adminChatForm">
+                                            <input type="text" id="adminChatInput" placeholder="Ответ консультанта..." autocomplete="off" disabled>
+                                            <button class="btn btn-primary" type="submit" disabled id="adminChatSend">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </button>
+                                        </form>
+                                    </section>
+                                </div>
                             </div>
                         </div>
 
@@ -167,7 +286,81 @@
         </section>
     </main>
 
-    <script src="../js/admin.js"></script>
-    <script src="../js/luxury.js"></script>
+    <!-- Футер -->
+    <footer id="site-footer" class="footer site-footer" aria-label="Подвал сайта">
+        <div class="footer-video-layer" aria-hidden="true">
+            <video autoplay muted loop playsinline preload="metadata">
+                <source src="../assets/video/footer-sea-wave.mp4" type="video/mp4">
+            </video>
+        </div>
+        <div class="container">
+            <div class="footer-cta">
+                <div class="footer-cta-copy">
+                    <span>Private order</span>
+                    <h3>Соберем морскую подборку под ваш ужин</h3>
+                    <p>Подберем позиции, уточним формат разделки и согласуем доставку в удобное окно.</p>
+                </div>
+                <div class="footer-cta-actions">
+                    <a href="catalog.html" class="btn btn-primary">Выбрать продукты</a>
+                    <a href="../index.html#contacts" class="btn btn-secondary">Связаться</a>
+                </div>
+            </div>
+            <div class="footer-content">
+                <div class="footer-section footer-brand">
+                    <a class="footer-logo" href="../index.html" aria-label="Морские Дары — на главную">
+                        <img src="../assets/images/logo-morskie-dary.png?v=4" alt="" aria-hidden="true">
+                        <span>
+                            <strong>Морские Дары</strong>
+                            <small>ИП Чепурнова О.И.</small>
+                        </span>
+                    </a>
+                    <p>Продажа и доставка охлажденной и замороженной рыбы и морепродуктов.</p>
+                    <div class="footer-brand-meta">
+                        <span>Екатеринбург</span>
+                        <span>0-2°C логистика</span>
+                        <span>Демо-проект</span>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Каталог</h4>
+                    <ul>
+                        <li><a href="catalog.html">Охлажденная рыба</a></li>
+                        <li><a href="catalog.html">Замороженная рыба</a></li>
+                        <li><a href="catalog.html">Морепродукты</a></li>
+                        <li><a href="catalog.html">Филе и стейки</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Покупателям</h4>
+                    <ul>
+                        <li><a href="account.html">Личный кабинет</a></li>
+                        <li><a href="orders.html">Мои заказы</a></li>
+                        <li><a href="favorites.html">Избранное</a></li>
+                        <li><a href="delivery-payment.html">Доставка и оплата</a></li>
+                        <li><a href="return.html">Возврат</a></li>
+                        <li><a href="privacy.html">Политика данных</a></li>
+                        <li><a href="requisites.html">Реквизиты</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section footer-contact-card">
+                    <h4>Свяжитесь с нами</h4>
+                    <p>+7 (343) 302-18-64</p>
+                    <p>orders@morskie-dary.example</p>
+                    <div class="social-links">
+                        <a href="https://vk.com/morskie_dary_demo" target="_blank" rel="noopener" aria-label="VK"><i class="fab fa-vk"></i></a>
+                        <a href="https://t.me/morskie_dary_demo" target="_blank" rel="noopener" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 ИП Чепурнова О.И. Все права защищены.</p>
+                <span>Premium seafood delivery service</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/fishsite-core.js?v=3"></script>
+    <script src="../js/admin.js?v=3"></script>
+    <script src="../js/luxury.js?v=2"></script>
 </body>
 </html>

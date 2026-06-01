@@ -1,6 +1,6 @@
 // Общие функции для всех страниц ЛК
 function loadUserData() {
-    const userData = JSON.parse(localStorage.getItem('user')) || {
+    const userData = window.FishSite?.getCurrentUser?.() || {
         name: "Ольга Ивановна",
         email: "olga@example.com",
         initials: "ОИ",
@@ -75,17 +75,28 @@ function setupNavigation() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            localStorage.removeItem('user');
-            localStorage.removeItem('rememberMe');
+            window.FishSite?.logout?.();
             window.location.href = '../index.html';
         });
     }
 }
 
 // Функции для личного кабинета
-function loadAccountStats() {
-    const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-    const orders = JSON.parse(localStorage.getItem('orders')) || [];
+async function getAccountOrders() {
+    const userData = window.FishSite?.getCurrentUser?.();
+    if (window.FishSite?.request && userData?.email) {
+        try {
+            return await window.FishSite.request(`/orders?email=${encodeURIComponent(userData.email)}`);
+        } catch {
+            return [];
+        }
+    }
+    return [];
+}
+
+async function loadAccountStats() {
+    const favorites = window.FishSite?.getFavoriteIds?.() || [];
+    const orders = await getAccountOrders();
     
     // Обновляем статистику
     document.getElementById('total-favorites').textContent = favorites.length;
@@ -100,8 +111,8 @@ function loadAccountStats() {
     document.getElementById('total-deliveries').textContent = deliveries;
 }
 
-function loadRecentOrders() {
-    const orders = JSON.parse(localStorage.getItem('orders')) || [];
+async function loadRecentOrders() {
+    const orders = await getAccountOrders();
     const recentOrdersContainer = document.getElementById('recent-orders');
     
     if (!recentOrdersContainer) return;
@@ -135,9 +146,9 @@ function loadRecentOrders() {
                 <div class="order-status status-${order.status}">${getStatusText(order.status)}</div>
             </div>
             <div class="order-items">
-                ${order.items.map(item => `
+                ${(order.items || order.products || []).map(item => `
                     <div class="order-item">
-                        <div class="order-item-image">${item.image}</div>
+                        <div class="order-item-image">${window.FishSite?.formatProductImage ? window.FishSite.formatProductImage(item, 'order-product-art') : item.image}</div>
                         <div class="order-item-name">${item.name}</div>
                         <div class="order-item-quantity">${item.quantity} кг</div>
                     </div>
@@ -159,17 +170,51 @@ function loadRecentOrders() {
 function getStatusText(status) {
     const statusMap = {
         'new': 'Новый',
-        'processing': 'В обработке',
+        'confirmed': 'Подтвержден',
+        'processing': 'Собирается',
+        'courier': 'Передан курьеру',
         'delivered': 'Доставлен',
         'cancelled': 'Отменен'
     };
     return statusMap[status] || status;
 }
 
+async function loadAccountNotifications() {
+    const accountContent = document.querySelector('.account-content');
+    if (!accountContent || !window.FishSite?.request) return;
+
+    let notifications = [];
+    try {
+        notifications = await window.FishSite.request('/notifications');
+    } catch {
+        return;
+    }
+
+    const panel = document.createElement('section');
+    panel.className = 'account-orders-panel account-notifications-panel';
+    panel.innerHTML = `
+        <div class="account-orders-head">
+            <div>
+                <span>Notifications</span>
+                <h3>Уведомления</h3>
+            </div>
+        </div>
+        ${notifications.length ? notifications.slice(0, 5).map(item => `
+            <article class="notification-card ${item.is_read ? '' : 'unread'}">
+                <strong>${item.title}</strong>
+                <p>${item.message}</p>
+                <span>${item.created_at}</span>
+            </article>
+        `).join('') : '<p class="empty-state">Новых уведомлений пока нет.</p>'}
+    `;
+    accountContent.prepend(panel);
+}
+
 // Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    await window.FishSite?.init?.();
     // Проверяем авторизацию
-    const user = localStorage.getItem('user');
+    const user = window.FishSite?.getCurrentUser?.();
     if (!user) {
         window.location.href = '../index.html';
         return;
@@ -178,6 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Загружаем данные пользователя
     loadUserData();
     setupNavigation();
-    loadAccountStats();
-    loadRecentOrders();
+    await loadAccountStats();
+    await loadRecentOrders();
+    await loadAccountNotifications();
 });
