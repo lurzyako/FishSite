@@ -14,3 +14,7 @@ services:
         fromDatabase:
           name: fishsite-db
           property: connectionString
+      - key: FISHSITE_DEMO_USER_PASSWORD
+        sync: false
+      - key: FISHSITE_DEMO_ADMIN_PASSWORD
+        sync: false
