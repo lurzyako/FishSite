@@ -76,7 +76,7 @@ function setupNavigation() {
         logoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
             window.FishSite?.logout?.();
-            window.location.href = '../index.html';
+            window.location.href = '/';
         });
     }
 }
@@ -157,7 +157,7 @@ async function loadRecentOrders() {
             <div class="order-footer">
                 <div class="order-total">${order.total} руб.</div>
                 <div class="order-actions">
-                    <a href="order-details.html?id=${order.id}" class="btn btn-outline">Подробнее</a>
+                    <a href="orders.html?order=${encodeURIComponent(order.id)}" class="btn btn-outline">Подробнее</a>
                     <button class="btn btn-primary">Повторить заказ</button>
                 </div>
             </div>
@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Проверяем авторизацию
     const user = window.FishSite?.getCurrentUser?.();
     if (!user) {
-        window.location.href = '../index.html';
+        window.location.href = '/';
         return;
     }
     

@@ -83,6 +83,16 @@
         return `${assetPrefix}${path}`;
     }
 
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[char]));
+    }
+
     async function request(path, options = {}) {
         const response = await fetch(`${API_BASE}${path}`, {
             headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
@@ -319,8 +329,11 @@
     }
 
     function formatProductImage(product, className = '') {
-        const image = normalizeProduct(product).image;
-        return `<img src="${image}" alt="${product.name}" class="${className}" loading="lazy" decoding="async" sizes="(max-width: 640px) 82vw, 360px">`;
+        const normalized = normalizeProduct(product);
+        const image = escapeHtml(normalized.image);
+        const alt = escapeHtml(normalized.name || 'Товар');
+        const safeClassName = String(className || '').replace(/[^a-zA-Z0-9 _-]/g, '');
+        return `<img src="${image}" alt="${alt}" class="${safeClassName}" loading="lazy" decoding="async" sizes="(max-width: 640px) 82vw, 360px">`;
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -344,6 +357,7 @@
         getProducts,
         searchProducts,
         normalizeProduct,
+        escapeHtml,
         formatProductImage,
         getCart,
         setCart,

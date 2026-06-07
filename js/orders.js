@@ -316,7 +316,7 @@ const adminOrdersTableBody = document.getElementById('adminOrdersTableBody');
 document.addEventListener('DOMContentLoaded', async function() {
     await window.FishSite?.init?.();
     if (!window.FishSite?.getCurrentUser?.()) {
-        window.location.href = '../index.html';
+        window.location.href = '/';
         return;
     }
     loadUserData();
@@ -326,6 +326,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     updateOrderStats();
     renderOrders();
     updatePagination();
+    openOrderFromQuery();
     
     // Инициализируем кнопку переключения режима
     initModeSwitcher();
@@ -373,6 +374,13 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     initOrderRatingModal();
 });
+
+function openOrderFromQuery() {
+    const orderId = new URLSearchParams(window.location.search).get('order');
+    if (!orderId) return;
+
+    window.setTimeout(() => viewOrderDetails(orderId), 0);
+}
 
 async function loadOrdersFromApi() {
     if (!window.FishSite?.request) return;
@@ -593,7 +601,7 @@ function setupNavigation() {
         logoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
             window.FishSite?.logout?.();
-            window.location.href = '../index.html';
+            window.location.href = '/';
         });
     }
 }

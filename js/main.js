@@ -74,6 +74,31 @@ function renderMapFallback() {
     `;
 }
 
+function escapeHtml(value) {
+    if (window.FishSite?.escapeHtml) {
+        return window.FishSite.escapeHtml(value);
+    }
+    return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    }[char]));
+}
+
+function requireFishSite(methodName) {
+    const api = window.FishSite;
+    if (!api || typeof api[methodName] !== 'function') {
+        const message = 'Ядро сайта не загружено. Откройте проект через backend-сервер и обновите страницу.';
+        if (typeof showNotification === 'function') {
+            showNotification(message, 'error');
+        }
+        throw new Error(message);
+    }
+    return api;
+}
+
 // Генерация анимированных рыб и пузырьков
 function generateUnderwaterScene() {
     const blowingBubbles = document.querySelector('.blowing-bubbles');
@@ -484,8 +509,25 @@ document.addEventListener('DOMContentLoaded', async function() {
     updateCartCount();
     checkAuth();
     updateFavoritesCount();
+    handleAuthRedirectMessage();
+    initInputMasks(document);
     initConsultantChat();
 });
+
+function handleAuthRedirectMessage() {
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get('auth_error');
+    if (!error) return;
+
+    const messages = {
+        oauth_not_configured: 'Вход через Google/VK не настроен: нужны OAuth-ключи в переменных окружения.'
+    };
+    showNotification(messages[error] || 'Не удалось выполнить вход через внешний сервис', 'error');
+    params.delete('auth_error');
+    const cleanQuery = params.toString();
+    const nextUrl = `${window.location.pathname}${cleanQuery ? `?${cleanQuery}` : ''}${window.location.hash}`;
+    window.history.replaceState({}, '', nextUrl);
+}
 
 async function loadProducts() {
     if (!window.FishSite?.getProducts) return;
@@ -500,7 +542,89 @@ function productImageMarkup(product, className = '') {
     if (window.FishSite?.formatProductImage) {
         return window.FishSite.formatProductImage(product, className);
     }
-    return `<span>${product.image || product.imageSymbol || ''}</span>`;
+    return `<span>${escapeHtml(product.image || product.imageSymbol || '')}</span>`;
+}
+
+function normalizeEmailInputValue(value) {
+    return String(value || '').replace(/\s+/g, '').toLowerCase();
+}
+
+function normalizePhoneDigits(value) {
+    let digits = String(value || '').replace(/\D+/g, '');
+    if (digits.length > 11) digits = digits.slice(0, 11);
+    if (digits.length === 11 && digits.startsWith('8')) {
+        digits = `7${digits.slice(1)}`;
+    }
+    if (digits.length === 10) {
+        digits = `7${digits}`;
+    }
+    if (digits && !digits.startsWith('7')) {
+        digits = `7${digits.slice(-10)}`;
+    }
+    return digits.slice(0, 11);
+}
+
+function formatPhoneInputValue(value) {
+    const digits = normalizePhoneDigits(value);
+    if (!digits) return '';
+
+    const national = digits.startsWith('7') ? digits.slice(1) : digits;
+    const part1 = national.slice(0, 3);
+    const part2 = national.slice(3, 6);
+    const part3 = national.slice(6, 8);
+    const part4 = national.slice(8, 10);
+
+    let formatted = '+7';
+    if (part1) formatted += ` (${part1}`;
+    if (part1.length === 3) formatted += ')';
+    if (part2) formatted += ` ${part2}`;
+    if (part3) formatted += `-${part3}`;
+    if (part4) formatted += `-${part4}`;
+    return formatted;
+}
+
+function normalizePhoneForSubmit(value) {
+    const digits = normalizePhoneDigits(value);
+    return digits.length === 11 ? `+${digits}` : '';
+}
+
+function initInputMasks(root = document) {
+    root.querySelectorAll('input[type="tel"]').forEach(input => {
+        input.placeholder = '+7 (___) ___-__-__';
+        input.inputMode = 'tel';
+        input.autocomplete = input.autocomplete || 'tel';
+        input.pattern = '^\\+7 \\([0-9]{3}\\) [0-9]{3}-[0-9]{2}-[0-9]{2}$';
+        input.maxLength = 18;
+        input.addEventListener('input', () => {
+            input.value = formatPhoneInputValue(input.value);
+        });
+        input.addEventListener('blur', () => {
+            input.value = formatPhoneInputValue(input.value);
+        });
+    });
+
+    root.querySelectorAll('input[type="email"]').forEach(input => {
+        input.inputMode = 'email';
+        input.autocomplete = input.autocomplete || 'email';
+        input.addEventListener('blur', () => {
+            input.value = normalizeEmailInputValue(input.value);
+        });
+    });
+}
+
+function getNormalizedEmailInput(id) {
+    const input = document.getElementById(id);
+    if (!input) return '';
+    input.value = normalizeEmailInputValue(input.value);
+    return input.value;
+}
+
+function getNormalizedPhoneInput(id) {
+    const input = document.getElementById(id);
+    if (!input) return '';
+    const phone = normalizePhoneForSubmit(input.value);
+    input.value = formatPhoneInputValue(input.value);
+    return phone;
 }
 
 // Инициализация обработчиков событий
@@ -906,22 +1030,22 @@ function createFeaturedProductCard(product) {
     card.dataset.id = product.id;
     card.dataset.category = product.category;
     card.innerHTML = `
-        <div class="featured-product-visual featured-product-visual-${product.category}">
+        <div class="featured-product-visual featured-product-visual-${escapeHtml(product.category)}">
             <span class="featured-product-icon" aria-hidden="true">${productImageMarkup(product, 'product-art-image')}</span>
             <button class="favorite-btn ${favorites.includes(product.id) ? 'active' : ''}" data-id="${product.id}" aria-label="Добавить в избранное">
                 <i class="fas fa-heart"></i>
             </button>
         </div>
         <div class="featured-product-content">
-            <span class="product-category">${getCategoryName(product.category)}</span>
-            <h3>${product.name}</h3>
-            <p>${product.description}</p>
+            <span class="product-category">${escapeHtml(getCategoryName(product.category))}</span>
+            <h3>${escapeHtml(product.name)}</h3>
+            <p>${escapeHtml(product.description)}</p>
             <div class="featured-product-meta">
-                <span>${product.origin}</span>
-                <span>${product.storage}</span>
+                <span>${escapeHtml(product.origin)}</span>
+                <span>${escapeHtml(product.storage)}</span>
             </div>
             <div class="featured-product-footer">
-                <strong>${product.price} руб./кг</strong>
+                <strong>${escapeHtml(product.price)} руб./кг</strong>
                 <div class="featured-product-actions">
                     <button class="btn btn-outline featured-details" type="button" data-id="${product.id}">Подробнее</button>
                     <button class="btn btn-primary featured-add" type="button" data-id="${product.id}" aria-label="Добавить в корзину">
@@ -1065,31 +1189,42 @@ function renderProductSkeletons() {
 
 // Создание карточки товара
 function createProductCard(product) {
+    const stockRaw = product.stock ?? product.stockQuantity ?? product.stock_quantity;
+    const hasStockValue = stockRaw !== undefined && stockRaw !== null && stockRaw !== '';
+    const stockValue = Number(stockRaw);
+    const isOutOfStock = hasStockValue && Number.isFinite(stockValue) && stockValue <= 0;
+    const stockLabel = isOutOfStock ? 'Нет в наличии' : 'В наличии';
     const card = document.createElement('div');
-    card.className = 'product-card';
+    card.className = `product-card${isOutOfStock ? ' product-card--unavailable' : ''}`;
     card.dataset.id = product.id;
     
     card.innerHTML = `
-        <button class="favorite-btn ${favorites.includes(product.id) ? 'active' : ''}" data-id="${product.id}">
+        <button class="favorite-btn ${favorites.includes(product.id) ? 'active' : ''}" data-id="${Number(product.id)}">
             <i class="fas fa-heart"></i>
         </button>
         <div class="product-card-content">
             <div class="product-image">
                 <span>${productImageMarkup(product, 'product-art-image')}</span>
-                <small class="product-badge">${getProductBadge(product)}</small>
+                <div class="product-card-status">
+                    <small class="product-badge">${escapeHtml(getProductBadge(product))}</small>
+                    <small class="product-stock-chip">${escapeHtml(stockLabel)}</small>
+                </div>
             </div>
             <div class="product-info">
                 <div class="product-topline">
-                    <span class="product-category">${getCategoryName(product.category)}</span>
-                    <span class="product-origin">${product.origin}</span>
+                    <span class="product-category">${escapeHtml(getCategoryName(product.category))}</span>
+                    <span class="product-origin">${escapeHtml(product.origin)}</span>
                 </div>
-                <h3 class="product-title">${product.name}</h3>
-                <p class="product-description">${product.description}</p>
+                <h3 class="product-title">${escapeHtml(product.name)}</h3>
+                <p class="product-description">${escapeHtml(product.description)}</p>
                 <div class="product-meta">
-                    <span><i class="fas fa-box"></i>${product.weight}</span>
-                    <span><i class="fas fa-temperature-low"></i>${product.storage}</span>
+                    <span><i class="fas fa-box"></i>${escapeHtml(product.weight)}</span>
+                    <span><i class="fas fa-temperature-low"></i>${escapeHtml(product.storage)}</span>
                 </div>
-                <div class="product-price">${product.price} руб./кг</div>
+                <div class="product-price-block">
+                    <span>Цена за кг</span>
+                    <div class="product-price">${escapeHtml(product.price)} руб.</div>
+                </div>
                 <div class="product-actions">
                     <div class="quantity-controls">
                         <button class="quantity-btn minus" data-id="${product.id}">-</button>
@@ -1099,7 +1234,7 @@ function createProductCard(product) {
                     <a class="product-details-link" href="${getProductPageHref(product)}" aria-label="Открыть страницу товара">
                         <i class="fas fa-arrow-up-right-from-square"></i>
                     </a>
-                    <button class="btn btn-primary add-to-cart" data-id="${product.id}">
+                    <button class="btn btn-primary add-to-cart" data-id="${product.id}" ${isOutOfStock ? 'disabled aria-disabled="true"' : ''}>
                         <i class="fas fa-cart-plus"></i>
                     </button>
                 </div>
@@ -1165,9 +1300,13 @@ async function addToCart(productId, quantity) {
     
     if (!product) return;
 
-    cart = window.FishSite?.addToCart ? await window.FishSite.addToCart(product, quantity) : [...cart, { ...product, quantity }];
-    updateCartCount();
-    showNotification(`Товар "${product.name}" добавлен в корзину!`);
+    try {
+        cart = window.FishSite?.addToCart ? await window.FishSite.addToCart(product, quantity) : [...cart, { ...product, quantity }];
+        updateCartCount();
+        showNotification(`Товар "${product.name}" добавлен в корзину!`);
+    } catch (error) {
+        showNotification(error.message || 'Не удалось добавить товар в корзину', 'error');
+    }
 }
 
 // Обновление счетчика корзины
@@ -1613,11 +1752,11 @@ async function handleContactFormSubmit(e) {
     e.preventDefault();
     
     const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
+    const email = getNormalizedEmailInput('email');
     const message = document.getElementById('message').value;
     
     try {
-        await window.FishSite.request('/contact-requests', {
+        await requireFishSite('request').request('/contact-requests', {
             method: 'POST',
             body: JSON.stringify({ name, email, message })
         });
@@ -1636,7 +1775,7 @@ async function handleDeliveryFormSubmit(e) {
     const deliveryTime = document.getElementById('delivery-time').value;
     
     try {
-        const result = await window.FishSite.request('/delivery-requests', {
+        const result = await requireFishSite('request').request('/delivery-requests', {
             method: 'POST',
             body: JSON.stringify({ address, deliveryTime })
         });
@@ -1685,7 +1824,7 @@ function closeAuthModal() {
 async function handleAuthSubmit(e) {
     e.preventDefault();
     
-    const email = document.getElementById('auth-email').value;
+    const email = getNormalizedEmailInput('auth-email');
     const password = document.getElementById('auth-password').value;
 
     if (!email || !password) {
@@ -1694,10 +1833,11 @@ async function handleAuthSubmit(e) {
     }
 
     try {
-        const userData = await window.FishSite.login(email, password);
+        const api = requireFishSite('login');
+        const userData = await api.login(email, password);
         updateUserInterface(userData);
-        favorites = window.FishSite?.getFavoriteIds ? window.FishSite.getFavoriteIds() : [];
-        cart = window.FishSite?.getCart ? window.FishSite.getCart() : cart;
+        favorites = api.getFavoriteIds ? api.getFavoriteIds() : [];
+        cart = api.getCart ? api.getCart() : cart;
         renderFeaturedCarousel();
         renderCurrentCatalogView();
         updateCartCount();
@@ -1832,6 +1972,7 @@ function showPasswordResetModal() {
     document.body.appendChild(modalContainer);
     
     const modal = document.getElementById('password-reset-modal');
+    initInputMasks(modal);
     const closeBtn = modal.querySelector('.close-modal');
     const form = document.getElementById('password-reset-form');
     const backLink = modal.querySelector('.back-to-login');
@@ -1843,7 +1984,7 @@ function showPasswordResetModal() {
     
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = document.getElementById('reset-email').value;
+        const email = getNormalizedEmailInput('reset-email');
         
         if (email) {
             showNotification('Ссылка для восстановления пароля отправлена на вашу почту');
@@ -1915,6 +2056,7 @@ function showRegistrationModal() {
     document.body.appendChild(modalContainer);
     
     const modal = document.getElementById('registration-modal');
+    initInputMasks(modal);
     const closeBtn = modal.querySelector('.close-modal');
     const form = document.getElementById('registration-form');
     const backLink = modal.querySelector('.back-to-login');
@@ -1928,8 +2070,8 @@ function showRegistrationModal() {
         e.preventDefault();
         
         const name = document.getElementById('reg-name').value;
-        const email = document.getElementById('reg-email').value;
-        const phone = document.getElementById('reg-phone').value;
+        const email = getNormalizedEmailInput('reg-email');
+        const phone = getNormalizedPhoneInput('reg-phone');
         const password = document.getElementById('reg-password').value;
         const confirmPassword = document.getElementById('reg-confirm-password').value;
         
@@ -1938,11 +2080,17 @@ function showRegistrationModal() {
             return;
         }
         
+        if (!phone) {
+            showNotification('Введите телефон в формате +7 (999) 123-45-67', 'error');
+            return;
+        }
+
         if (name && email && phone && password) {
             try {
-                const userData = await window.FishSite.registerUser({ name, email, phone, password });
+                const api = requireFishSite('registerUser');
+                const userData = await api.registerUser({ name, email, phone, password });
                 updateUserInterface(userData);
-                favorites = window.FishSite?.getFavoriteIds ? window.FishSite.getFavoriteIds() : [];
+                favorites = api.getFavoriteIds ? api.getFavoriteIds() : [];
                 updateFavoritesCount();
                 showNotification('Регистрация прошла успешно! Добро пожаловать!');
                 modal.remove();
@@ -1972,8 +2120,9 @@ function checkAuth() {
 
 // Избранное
 async function toggleFavorite(productId, button) {
-    const result = await window.FishSite.toggleFavorite(productId);
-    favorites = window.FishSite.getFavoriteIds();
+    const api = requireFishSite('toggleFavorite');
+    const result = await api.toggleFavorite(productId);
+    favorites = api.getFavoriteIds ? api.getFavoriteIds() : [];
 
     document.querySelectorAll(`.favorite-btn[data-id="${productId}"]`).forEach(favoriteButton => {
         favoriteButton.classList.toggle('active', favorites.includes(productId));
@@ -2155,19 +2304,24 @@ async function handleCheckoutSubmit(e) {
     e.preventDefault();
     
     const name = document.getElementById('checkout-name').value;
-    const phone = document.getElementById('checkout-phone').value;
-    const email = document.getElementById('checkout-email').value;
+    const phone = getNormalizedPhoneInput('checkout-phone');
+    const email = getNormalizedEmailInput('checkout-email');
     const address = document.getElementById('checkout-address').value;
     const comment = document.getElementById('checkout-comment').value;
     const payment = document.getElementById('checkout-payment').value;
     
     try {
-        cart = window.FishSite?.getCart ? window.FishSite.getCart() : cart;
-        const order = await window.FishSite.request('/orders', {
+        if (!phone) {
+            showNotification('Введите телефон в формате +7 (999) 123-45-67', 'error');
+            return;
+        }
+        const api = requireFishSite('request');
+        cart = api.getCart ? api.getCart() : cart;
+        const order = await api.request('/orders', {
             method: 'POST',
             body: JSON.stringify({ name, phone, email, address, comment, payment })
         });
-        cart = window.FishSite?.clearCart ? await window.FishSite.clearCart() : [];
+        cart = api.clearCart ? await api.clearCart() : [];
         updateCartCount();
         closeCheckoutModal();
         showNotification(`Заказ ${order.id} оформлен! Мы свяжемся с вами для подтверждения.`);
@@ -2193,24 +2347,24 @@ function openProductModal(productId) {
                     ${productImageMarkup(product, 'product-modal-art')}
                 </div>
                 <div class="product-modal-image-caption">
-                    <span>${getProductBadge(product)}</span>
-                    <strong>${product.storage}</strong>
+                    <span>${escapeHtml(getProductBadge(product))}</span>
+                    <strong>${escapeHtml(product.storage)}</strong>
                 </div>
             </div>
             <div class="product-modal-assurance" aria-label="Гарантии по товару">
                 <span><i class="fas fa-temperature-low"></i> Холодная цепь</span>
-                <span><i class="fas fa-location-dot"></i> ${product.origin}</span>
+                <span><i class="fas fa-location-dot"></i> ${escapeHtml(product.origin)}</span>
             </div>
         </div>
         <div class="product-modal-info">
             <div class="product-header">
-                <span class="product-category">${getCategoryName(product.category)}</span>
-                <h2 class="product-title">${product.name}</h2>
-                <p class="product-modal-lead">${product.description}</p>
+                <span class="product-category">${escapeHtml(getCategoryName(product.category))}</span>
+                <h2 class="product-title">${escapeHtml(product.name)}</h2>
+                <p class="product-modal-lead">${escapeHtml(product.description)}</p>
                 <div class="product-modal-tags" aria-label="Ключевые свойства товара">
-                    <span>${product.weight}</span>
-                    <span>${product.shelfLife}</span>
-                    <span>${product.origin}</span>
+                    <span>${escapeHtml(product.weight)}</span>
+                    <span>${escapeHtml(product.shelfLife)}</span>
+                    <span>${escapeHtml(product.origin)}</span>
                 </div>
                 <a class="product-page-link" href="${getProductPageHref(product)}">
                     Открыть полную страницу товара <i class="fas fa-arrow-right"></i>
@@ -2222,19 +2376,19 @@ function openProductModal(productId) {
                 <div class="details-grid">
                     <div class="detail-item">
                         <span class="detail-label">Вес упаковки</span>
-                        <span class="detail-value">${product.weight}</span>
+                        <span class="detail-value">${escapeHtml(product.weight)}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Срок годности</span>
-                        <span class="detail-value">${product.shelfLife}</span>
+                        <span class="detail-value">${escapeHtml(product.shelfLife)}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Страна происхождения</span>
-                        <span class="detail-value">${product.origin}</span>
+                        <span class="detail-value">${escapeHtml(product.origin)}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Условия хранения</span>
-                        <span class="detail-value">${product.storage}</span>
+                        <span class="detail-value">${escapeHtml(product.storage)}</span>
                     </div>
                 </div>
             </div>
@@ -2242,7 +2396,7 @@ function openProductModal(productId) {
             <div class="product-price-section">
                 <div class="price-info">
                     <span class="price-label">Цена</span>
-                    <span class="product-price-large">${product.price} руб./кг</span>
+                    <span class="product-price-large">${escapeHtml(product.price)} руб./кг</span>
                 </div>
                 <div class="product-quantity">
                     <div class="quantity-controls">

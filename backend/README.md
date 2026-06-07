@@ -23,7 +23,14 @@ Backend-слой FishSite работает на FastAPI + PostgreSQL.
 - Клиент: `olga@example.com`, пароль `demo`.
 - Администратор: `admin@fishsite.local`, пароль `admin`.
 
-Пароли хранятся не открытым текстом: backend использует `PBKDF2-HMAC-SHA256` с индивидуальной солью.
+Пароли хранятся не открытым текстом: backend использует `PBKDF2-HMAC-SHA256` с индивидуальной солью. Чтобы fresh database получила эти пароли, задайте их через переменные окружения перед первым запуском:
+
+```bash
+export FISHSITE_DEMO_USER_PASSWORD="demo"
+export FISHSITE_DEMO_ADMIN_PASSWORD="admin"
+```
+
+Если переменные не заданы, backend не создает и не перезаписывает demo-пароли.
 
 ## Запуск PostgreSQL-версии
 

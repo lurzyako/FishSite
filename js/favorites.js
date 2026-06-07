@@ -160,6 +160,13 @@ function createFavoriteCard(product) {
     const card = document.createElement('div');
     card.className = 'favorite-item';
     card.dataset.id = product.id;
+    const escapeHtml = window.FishSite?.escapeHtml || ((value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    }[char])));
     
     const price = product.hasDiscount ? product.discountPrice : product.price;
     const oldPrice = product.hasDiscount ? product.price : null;
@@ -169,23 +176,23 @@ function createFavoriteCard(product) {
             <i class="fas fa-times"></i>
         </button>
         <div class="favorite-image">
-            ${window.FishSite?.formatProductImage ? window.FishSite.formatProductImage(product, 'favorite-art-image') : product.image}
+            ${window.FishSite?.formatProductImage ? window.FishSite.formatProductImage(product, 'favorite-art-image') : escapeHtml(product.image)}
             ${product.hasDiscount ? '<div class="discount-badge">СКИДКА</div>' : ''}
         </div>
         <div class="favorite-info">
-            <div class="product-category">${getCategoryName(product.category)}</div>
-            <h3 class="favorite-title">${product.name}</h3>
+            <div class="product-category">${escapeHtml(getCategoryName(product.category))}</div>
+            <h3 class="favorite-title">${escapeHtml(product.name)}</h3>
             <p class="product-description" style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 15px;">
-                ${product.description}
+                ${escapeHtml(product.description)}
             </p>
             <div class="product-details-mini" style="display: flex; gap: 15px; margin-bottom: 15px; font-size: 0.85rem; color: var(--text-light);">
-                <span>${product.weight}</span>
-                <span>${product.origin}</span>
+                <span>${escapeHtml(product.weight)}</span>
+                <span>${escapeHtml(product.origin)}</span>
             </div>
             <div class="price-section" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                ${oldPrice ? `<span class="old-price" style="text-decoration: line-through; color: var(--text-light);">${oldPrice} руб.</span>` : ''}
+                ${oldPrice ? `<span class="old-price" style="text-decoration: line-through; color: var(--text-light);">${escapeHtml(oldPrice)} руб.</span>` : ''}
                 <span class="current-price" style="font-size: 1.2rem; font-weight: 600; color: var(--primary-color);">
-                    ${price} руб./кг
+                    ${escapeHtml(price)} руб./кг
                 </span>
             </div>
             <div class="favorite-actions">
@@ -426,7 +433,7 @@ function setupNavigation() {
         logoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
             window.FishSite?.logout?.();
-            window.location.href = 'index.html';
+            window.location.href = '../';
         });
     }
 }
@@ -437,7 +444,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Проверяем авторизацию
     const user = window.FishSite?.getCurrentUser?.();
     if (!user) {
-        window.location.href = 'index.html';
+        window.location.href = '../';
         return;
     }
     

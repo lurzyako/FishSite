@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import binascii
 import hashlib
 import hmac
 import os
@@ -27,8 +28,12 @@ SESSION_COOKIE = "fishsite_session"
 PASSWORD_ALGORITHM = "pbkdf2_sha256"
 PASSWORD_ITERATIONS = 260_000
 DEMO_PASSWORDS = {
-    "olga@example.com": "demo",
-    "admin@fishsite.local": "admin",
+    email: password
+    for email, password in {
+        "olga@example.com": os.environ.get("FISHSITE_DEMO_USER_PASSWORD", ""),
+        "admin@fishsite.local": os.environ.get("FISHSITE_DEMO_ADMIN_PASSWORD", ""),
+    }.items()
+    if password
 }
 
 CATEGORY_IMAGES = {
@@ -68,16 +73,28 @@ PAYMENT_LABELS = {
     "online": "Онлайн оплата",
 }
 
+PAYMENT_METHODS = set(PAYMENT_LABELS)
+
 SEARCH_SYNONYMS = {
-    "семга": {"семга", "сёмга", "лосось", "лосос"},
-    "сёмга": {"семга", "сёмга", "лосось", "лосос"},
-    "лосось": {"семга", "сёмга", "лосось", "лосос"},
-    "форель": {"форель"},
-    "креветки": {"креветка", "креветки", "shrimp"},
-    "креветка": {"креветка", "креветки", "shrimp"},
+    "семга": {"семга", "сёмга", "лосось", "лосос", "salmon", "semga"},
+    "сёмга": {"семга", "сёмга", "лосось", "лосос", "salmon", "semga"},
+    "лосось": {"семга", "сёмга", "лосось", "лосос", "salmon", "semga"},
+    "salmon": {"семга", "сёмга", "лосось", "лосос", "salmon", "semga"},
+    "semga": {"семга", "сёмга", "лосось", "лосос", "salmon", "semga"},
+    "форель": {"форель", "trout"},
+    "trout": {"форель", "trout"},
+    "креветки": {"креветка", "креветки", "shrimp", "prawn"},
+    "креветка": {"креветка", "креветки", "shrimp", "prawn"},
+    "shrimp": {"креветка", "креветки", "shrimp", "prawn"},
+    "prawn": {"креветка", "креветки", "shrimp", "prawn"},
     "икра": {"икра", "caviar"},
-    "гриль": {"гриль", "жарка", "сковорода", "запекание"},
-    "морепродукты": {"морепродукты", "креветки", "мидии", "кальмар", "осьминог"},
+    "caviar": {"икра", "caviar"},
+    "гриль": {"гриль", "жарка", "сковорода", "запекание", "grill"},
+    "grill": {"гриль", "жарка", "сковорода", "запекание", "grill"},
+    "премиум": {"премиум", "премиальный", "premium"},
+    "premium": {"премиум", "премиальный", "premium"},
+    "морепродукты": {"морепродукты", "креветки", "мидии", "кальмар", "осьминог", "seafood"},
+    "seafood": {"морепродукты", "креветки", "мидии", "кальмар", "осьминог", "seafood"},
 }
 
 
@@ -137,6 +154,8 @@ def verify_password(password: str, stored_hash: str | None) -> bool:
 
 
 def ensure_demo_passwords(connection: psycopg.Connection) -> None:
+    if not DEMO_PASSWORDS:
+        return
     with connection.cursor() as cursor:
         for email, password in DEMO_PASSWORDS.items():
             cursor.execute(
@@ -158,6 +177,14 @@ def ensure_database() -> None:
                 cursor.execute(schema)
                 cursor.execute(seed)
                 ensure_demo_passwords(connection)
+                cursor.execute(
+                    """
+                    UPDATE products
+                    SET is_active = false, updated_at = now()
+                    WHERE lower(name) LIKE 'asd%' OR lower(coalesce(description, '')) LIKE 'asd%'
+                    """
+                )
+                normalize_existing_contact_values(connection)
                 cursor.execute("SELECT setval(pg_get_serial_sequence('users', 'id'), COALESCE((SELECT MAX(id) FROM users), 1), true)")
                 cursor.execute("SELECT setval(pg_get_serial_sequence('products', 'id'), COALESCE((SELECT MAX(id) FROM products), 1), true)")
             connection.commit()
@@ -226,6 +253,81 @@ def user_to_api(row: dict[str, Any] | None) -> dict[str, Any] | None:
 
 def normalize_search_text(value: Any) -> str:
     return re.sub(r"\s+", " ", re.sub(r"[^a-zа-я0-9]+", " ", str(value or "").lower().replace("ё", "е"))).strip()
+
+
+def normalize_email(value: Any) -> str:
+    email = re.sub(r"\s+", "", str(value or "")).lower()
+    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
+        raise HTTPException(status_code=400, detail="Введите корректный email")
+    return email
+
+
+def normalize_phone(value: Any) -> str:
+    digits = re.sub(r"\D+", "", str(value or ""))
+    if len(digits) == 10:
+        digits = f"7{digits}"
+    elif len(digits) == 11 and digits.startswith("8"):
+        digits = f"7{digits[1:]}"
+    if len(digits) != 11 or not digits.startswith("7"):
+        raise HTTPException(status_code=400, detail="Введите телефон в формате +7 (999) 123-45-67")
+    return f"+{digits}"
+
+
+def normalize_existing_contact_values(connection: psycopg.Connection) -> None:
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT id, email, phone FROM users")
+        for row in cursor.fetchall():
+            updates: list[str] = []
+            values: list[Any] = []
+            try:
+                email = normalize_email(row.get("email"))
+                if email != row.get("email"):
+                    updates.append("email = %s")
+                    values.append(email)
+            except HTTPException:
+                pass
+            if row.get("phone"):
+                try:
+                    phone = normalize_phone(row.get("phone"))
+                    if phone != row.get("phone"):
+                        updates.append("phone = %s")
+                        values.append(phone)
+                except HTTPException:
+                    pass
+            if updates:
+                values.append(row["id"])
+                cursor.execute(f"UPDATE users SET {', '.join(updates)}, updated_at = now() WHERE id = %s", values)
+
+        cursor.execute("SELECT id, customer_email, customer_phone FROM orders")
+        for row in cursor.fetchall():
+            updates = []
+            values = []
+            try:
+                email = normalize_email(row.get("customer_email"))
+                if email != row.get("customer_email"):
+                    updates.append("customer_email = %s")
+                    values.append(email)
+            except HTTPException:
+                pass
+            try:
+                phone = normalize_phone(row.get("customer_phone"))
+                if phone != row.get("customer_phone"):
+                    updates.append("customer_phone = %s")
+                    values.append(phone)
+            except HTTPException:
+                pass
+            if updates:
+                values.append(row["id"])
+                cursor.execute(f"UPDATE orders SET {', '.join(updates)}, updated_at = now() WHERE id = %s", values)
+
+        cursor.execute("SELECT id, email FROM contact_requests")
+        for row in cursor.fetchall():
+            try:
+                email = normalize_email(row.get("email"))
+            except HTTPException:
+                continue
+            if email != row.get("email"):
+                cursor.execute("UPDATE contact_requests SET email = %s WHERE id = %s", (email, row["id"]))
 
 
 def stem_search_token(token: str) -> str:
@@ -571,7 +673,7 @@ def me(response: Response, fishsite_session: str | None = Cookie(default=None)) 
 @app.post("/api/auth/login")
 async def login(request: Request, response: Response, fishsite_session: str | None = Cookie(default=None)) -> dict[str, Any]:
     payload = await request.json()
-    email = (payload.get("email") or "").strip().lower()
+    email = normalize_email(payload.get("email"))
     password = (payload.get("password") or "").strip()
     session_id = get_session(response, fishsite_session)
     with connect() as connection:
@@ -589,10 +691,11 @@ async def login(request: Request, response: Response, fishsite_session: str | No
 async def register(request: Request, response: Response, fishsite_session: str | None = Cookie(default=None)) -> dict[str, Any]:
     payload = await request.json()
     name = (payload.get("name") or payload.get("fullName") or "").strip()
-    email = (payload.get("email") or "").strip().lower()
+    email = normalize_email(payload.get("email"))
+    phone = normalize_phone(payload.get("phone"))
     password = (payload.get("password") or "").strip()
-    if not name or not email or not password:
-        raise HTTPException(status_code=400, detail="Введите имя, email и пароль")
+    if not name or not password:
+        raise HTTPException(status_code=400, detail="Введите имя, email, телефон и пароль")
     initials = "".join(part[:1] for part in name.split()[:2]).upper() or email[:2].upper()
     session_id = get_session(response, fishsite_session)
     with connect() as connection:
@@ -600,11 +703,11 @@ async def register(request: Request, response: Response, fishsite_session: str |
             try:
                 cursor.execute(
                     """
-                    INSERT INTO users (full_name, email, password_hash, initials, role)
-                    VALUES (%s, %s, %s, %s, 'customer')
+                    INSERT INTO users (full_name, email, phone, password_hash, initials, role)
+                    VALUES (%s, %s, %s, %s, %s, 'customer')
                     RETURNING *
                     """,
-                    (name, email, hash_password(password), initials),
+                    (name, email, phone, hash_password(password), initials),
                 )
                 user = cursor.fetchone()
             except psycopg.errors.UniqueViolation as exc:
@@ -629,7 +732,9 @@ def logout(response: Response, fishsite_session: str | None = Cookie(default=Non
 def oauth_start(provider: str, returnTo: str = "/") -> RedirectResponse:
     if provider not in {"google", "vk"}:
         raise HTTPException(status_code=404, detail="Провайдер не найден")
-    return RedirectResponse(f"{returnTo}?auth_error=oauth_not_configured")
+    safe_return_to = returnTo if returnTo.startswith("/") and not returnTo.startswith("//") else "/"
+    separator = "&" if "?" in safe_return_to else "?"
+    return RedirectResponse(f"{safe_return_to}{separator}auth_error=oauth_not_configured")
 
 
 @app.get("/api/products")
@@ -653,7 +758,12 @@ def product_search(q: str = "") -> list[dict[str, Any]]:
     results: list[tuple[int, dict[str, Any]]] = []
     for row in rows:
         product = product_to_api(row)
-        haystack = normalize_search_text(" ".join(str(product.get(key) or "") for key in ["name", "category", "description", "origin", "storage", "weight", "price"]))
+        search_badges = "премиум premium популярное bestseller" if product.get("popular") else ""
+        haystack = normalize_search_text(
+            " ".join(str(product.get(key) or "") for key in ["name", "category", "description", "origin", "storage", "weight", "price"])
+            + " "
+            + search_badges
+        )
         hay_words = haystack.split()
         score = 0
         for token in tokens:
@@ -694,6 +804,15 @@ async def cart_add(request: Request, response: Response, fishsite_session: str |
                 raise HTTPException(status_code=404, detail="Товар не найден")
             cart_id = get_active_cart_id(connection, session_id, user)
             cursor.execute(
+                "SELECT quantity FROM cart_items WHERE cart_id = %s AND product_id = %s",
+                (cart_id, product_id),
+            )
+            existing_item = cursor.fetchone()
+            existing_quantity = Decimal(str(existing_item["quantity"] if existing_item else 0))
+            requested_quantity = existing_quantity + Decimal(str(quantity))
+            if Decimal(str(product["stock_quantity"] or 0)) < requested_quantity:
+                raise HTTPException(status_code=409, detail="Товара нет в наличии")
+            cursor.execute(
                 """
                 INSERT INTO cart_items (cart_id, product_id, quantity, price_rub)
                 VALUES (%s, %s, %s, %s)
@@ -723,10 +842,12 @@ async def cart_update(request: Request, response: Response, fishsite_session: st
             if quantity <= 0:
                 cursor.execute("DELETE FROM cart_items WHERE cart_id = %s AND product_id = %s", (cart_id, product_id))
             else:
-                cursor.execute("SELECT price_rub FROM products WHERE id = %s AND is_active = true", (product_id,))
+                cursor.execute("SELECT price_rub, stock_quantity FROM products WHERE id = %s AND is_active = true", (product_id,))
                 product = cursor.fetchone()
                 if not product:
                     raise HTTPException(status_code=404, detail="Товар не найден")
+                if Decimal(str(product["stock_quantity"] or 0)) < Decimal(str(quantity)):
+                    raise HTTPException(status_code=409, detail="Товара нет в наличии")
                 cursor.execute(
                     """
                     INSERT INTO cart_items (cart_id, product_id, quantity, price_rub)
@@ -835,6 +956,11 @@ async def create_order(request: Request, response: Response, fishsite_session: s
     required = ["name", "phone", "email", "address", "payment"]
     if any(not payload.get(field) for field in required):
         raise HTTPException(status_code=400, detail="Заполните обязательные поля заказа")
+    customer_phone = normalize_phone(payload.get("phone"))
+    customer_email = normalize_email(payload.get("email"))
+    payment_method = (payload.get("payment") or "cash").strip()
+    if payment_method not in PAYMENT_METHODS:
+        raise HTTPException(status_code=400, detail="Некорректный способ оплаты")
     session_id = get_session(response, fishsite_session)
     user = current_user(session_id)
     with connect() as connection:
@@ -861,10 +987,12 @@ async def create_order(request: Request, response: Response, fishsite_session: s
             for item in source_items:
                 product_id = item.get("id")
                 quantity = float(item.get("quantity") or 1)
-                cursor.execute("SELECT id, name, category_slug, price_rub FROM products WHERE id = %s AND is_active = true", (product_id,))
+                cursor.execute("SELECT id, name, category_slug, price_rub, stock_quantity FROM products WHERE id = %s AND is_active = true", (product_id,))
                 product = cursor.fetchone()
                 if not product or quantity <= 0:
                     continue
+                if Decimal(str(product["stock_quantity"] or 0)) < Decimal(str(quantity)):
+                    raise HTTPException(status_code=409, detail=f"Товара {product['name']} нет в нужном количестве")
                 line_total = int(round(product["price_rub"] * quantity))
                 total += line_total
                 normalized_items.append((product, quantity, line_total))
@@ -884,11 +1012,11 @@ async def create_order(request: Request, response: Response, fishsite_session: s
                     f"TMP-{uuid.uuid4().hex}",
                     user["id"] if user else None,
                     payload["name"].strip(),
-                    payload["phone"].strip(),
-                    payload["email"].strip(),
+                    customer_phone,
+                    customer_email,
                     payload["address"].strip(),
                     (payload.get("comment") or "").strip(),
-                    payload.get("payment") or "cash",
+                    payment_method,
                     total,
                 ),
             )
@@ -909,7 +1037,12 @@ async def create_order(request: Request, response: Response, fishsite_session: s
                     """,
                     (order_id, product["id"], product["name"], product["category_slug"], product["price_rub"], quantity, line_total),
                 )
+                cursor.execute(
+                    "UPDATE products SET stock_quantity = stock_quantity - %s, updated_at = now() WHERE id = %s",
+                    (quantity, product["id"]),
+                )
             cursor.execute("DELETE FROM cart_items WHERE cart_id = %s", (cart_id,))
+            cursor.execute("UPDATE carts SET status = 'converted', updated_at = now() WHERE id = %s", (cart_id,))
             cursor.execute("SELECT * FROM orders WHERE id = %s", (order_id,))
             order = cursor.fetchone()
         connection.commit()
@@ -919,14 +1052,15 @@ async def create_order(request: Request, response: Response, fishsite_session: s
 @app.get("/api/orders")
 def orders(email: str = "", fishsite_session: str | None = Cookie(default=None)) -> list[dict[str, Any]]:
     user = require_user(fishsite_session)
+    normalized_email = normalize_email(email) if email else ""
     with connect() as connection:
         with connection.cursor() as cursor:
             if user["role"] == "admin" and not email:
                 cursor.execute("SELECT * FROM orders ORDER BY id DESC")
-            elif email:
-                if user["role"] != "admin" and email.lower() != user["email"].lower():
+            elif normalized_email:
+                if user["role"] != "admin" and normalized_email != user["email"].lower():
                     raise HTTPException(status_code=403, detail="Недостаточно прав")
-                cursor.execute("SELECT * FROM orders WHERE lower(customer_email) = %s ORDER BY id DESC", (email.lower(),))
+                cursor.execute("SELECT * FROM orders WHERE lower(customer_email) = %s ORDER BY id DESC", (normalized_email,))
             else:
                 cursor.execute("SELECT * FROM orders WHERE lower(customer_email) = %s ORDER BY id DESC", (user["email"].lower(),))
             rows = cursor.fetchall()
@@ -938,11 +1072,12 @@ async def contact_request(request: Request) -> dict[str, Any]:
     payload = await request.json()
     if not payload.get("name") or not payload.get("email") or not payload.get("message"):
         raise HTTPException(status_code=400, detail="Заполните имя, email и сообщение")
+    email = normalize_email(payload.get("email"))
     with connect() as connection:
         with connection.cursor() as cursor:
             cursor.execute(
                 "INSERT INTO contact_requests (name, email, message) VALUES (%s, %s, %s) RETURNING id",
-                (payload["name"].strip(), payload["email"].strip(), payload["message"].strip()),
+                (payload["name"].strip(), email, payload["message"].strip()),
             )
             request_id = cursor.fetchone()["id"]
         connection.commit()
@@ -1043,16 +1178,23 @@ async def chat_message_send(request: Request, response: Response, fishsite_sessi
 async def order_rating(request: Request, fishsite_session: str | None = Cookie(default=None)) -> dict[str, bool]:
     payload = await request.json()
     order_number = payload.get("orderId")
-    rating = int(payload.get("rating") or 0)
+    try:
+        rating = int(payload.get("rating") or 0)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="Оценка должна быть числом от 1 до 5")
     if not order_number or rating < 1 or rating > 5:
         raise HTTPException(status_code=400, detail="Передайте заказ и оценку от 1 до 5")
-    user = current_user(fishsite_session)
+    user = require_user(fishsite_session)
     with connect() as connection:
         with connection.cursor() as cursor:
-            cursor.execute("SELECT id, user_id FROM orders WHERE order_number = %s", (order_number,))
+            cursor.execute("SELECT id, user_id, customer_email FROM orders WHERE order_number = %s", (order_number,))
             order = cursor.fetchone()
             if not order:
                 raise HTTPException(status_code=404, detail="Заказ не найден")
+            is_owner = order["user_id"] == user["id"]
+            is_same_email = (order.get("customer_email") or "").lower() == (user.get("email") or "").lower()
+            if user["role"] != "admin" and not (is_owner or is_same_email):
+                raise HTTPException(status_code=403, detail="Недостаточно прав")
             cursor.execute(
                 """
                 INSERT INTO order_ratings (order_id, user_id, rating, comment)
@@ -1062,7 +1204,7 @@ async def order_rating(request: Request, fishsite_session: str | None = Cookie(d
                     comment = EXCLUDED.comment,
                     updated_at = now()
                 """,
-                (order["id"], user["id"] if user else order["user_id"], rating, payload.get("comment") or ""),
+                (order["id"], user["id"], rating, payload.get("comment") or ""),
             )
         connection.commit()
     return {"ok": True}
@@ -1131,6 +1273,139 @@ def admin_overview(fishsite_session: str | None = Cookie(default=None)) -> dict[
             )
             ratings = [normalize_row(row) for row in cursor.fetchall()]
         return {"orders": [order_to_api(connection, row) for row in order_rows], "ratings": ratings}
+
+
+@app.get("/api/admin/statistics")
+def admin_statistics(period: str = "90", fishsite_session: str | None = Cookie(default=None)) -> dict[str, Any]:
+    require_admin(fishsite_session)
+    period_map = {"7": 7, "30": 30, "90": 90, "180": 180, "365": 365}
+    days = period_map.get(str(period))
+    bucket = "day" if days and days <= 31 else "month"
+    order_filter = "WHERE created_at >= now() - (%s || ' days')::interval" if days else ""
+    item_filter = "WHERE o.created_at >= now() - (%s || ' days')::interval" if days else ""
+    rating_filter = "WHERE r.created_at >= now() - (%s || ' days')::interval" if days else ""
+    order_params = (days,) if days else ()
+
+    def fetch_all(cursor: psycopg.Cursor, query: str, params: tuple[Any, ...] = ()) -> list[dict[str, Any]]:
+        cursor.execute(query, params)
+        return [normalize_row(row) for row in cursor.fetchall()]
+
+    with connect() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""
+                SELECT
+                    COUNT(*)::integer AS orders_count,
+                    COALESCE(SUM(total_amount_rub), 0)::integer AS revenue_rub,
+                    COALESCE(ROUND(AVG(total_amount_rub)), 0)::integer AS average_check_rub,
+                    COUNT(*) FILTER (WHERE status = 'delivered')::integer AS delivered_count
+                FROM orders
+                {order_filter}
+                """,
+                order_params,
+            )
+            summary = normalize_row(cursor.fetchone()) or {}
+
+            cursor.execute(
+                f"""
+                SELECT
+                    COALESCE(ROUND(AVG(r.rating)::numeric, 2), 0)::float AS average_rating,
+                    COUNT(r.id)::integer AS ratings_count
+                FROM order_ratings r
+                {rating_filter}
+                """,
+                order_params,
+            )
+            rating_summary = normalize_row(cursor.fetchone()) or {}
+
+            time_series = fetch_all(
+                cursor,
+                f"""
+                SELECT
+                    date_trunc(%s, created_at) AS bucket,
+                    COUNT(*)::integer AS orders_count,
+                    COALESCE(SUM(total_amount_rub), 0)::integer AS revenue_rub,
+                    COALESCE(ROUND(AVG(total_amount_rub)), 0)::integer AS average_check_rub,
+                    COUNT(*) FILTER (WHERE status = 'delivered')::integer AS delivered_count
+                FROM orders
+                {order_filter}
+                GROUP BY 1
+                ORDER BY 1
+                """,
+                (bucket, *order_params),
+            )
+
+            statuses = fetch_all(
+                cursor,
+                f"""
+                SELECT status, COUNT(*)::integer AS count
+                FROM orders
+                {order_filter}
+                GROUP BY status
+                ORDER BY count DESC
+                """,
+                order_params,
+            )
+
+            categories = fetch_all(
+                cursor,
+                f"""
+                SELECT
+                    COALESCE(oi.product_category_slug, 'other') AS category,
+                    COUNT(DISTINCT oi.order_id)::integer AS orders_count,
+                    COALESCE(SUM(oi.line_total_rub), 0)::integer AS revenue_rub,
+                    COALESCE(SUM(oi.quantity), 0)::float AS quantity
+                FROM order_items oi
+                JOIN orders o ON o.id = oi.order_id
+                {item_filter}
+                GROUP BY COALESCE(oi.product_category_slug, 'other')
+                ORDER BY revenue_rub DESC
+                """,
+                order_params,
+            )
+
+            payments = fetch_all(
+                cursor,
+                f"""
+                SELECT payment_method, COUNT(*)::integer AS count, COALESCE(SUM(total_amount_rub), 0)::integer AS revenue_rub
+                FROM orders
+                {order_filter}
+                GROUP BY payment_method
+                ORDER BY count DESC
+                """,
+                order_params,
+            )
+
+            ratings = fetch_all(
+                cursor,
+                f"""
+                SELECT rating, COUNT(*)::integer AS count
+                FROM order_ratings r
+                {rating_filter}
+                GROUP BY rating
+                ORDER BY rating DESC
+                """,
+                order_params,
+            )
+
+    first_bucket = time_series[0]["bucket"] if time_series else None
+    last_bucket = time_series[-1]["bucket"] if time_series else None
+    summary.update(rating_summary)
+    return {
+        "period": str(period),
+        "bucket": bucket,
+        "dateFrom": to_json_value(first_bucket),
+        "dateTo": to_json_value(last_bucket),
+        "summary": summary,
+        "timeSeries": time_series,
+        "statuses": statuses,
+        "categories": categories,
+        "payments": [
+            {**item, "label": PAYMENT_LABELS.get(item["payment_method"], item["payment_method"])}
+            for item in payments
+        ],
+        "ratings": ratings,
+    }
 
 
 @app.get("/api/admin/chat/threads")
@@ -1240,7 +1515,14 @@ def admin_products(fishsite_session: str | None = Cookie(default=None)) -> list[
     require_admin(fishsite_session)
     with connect() as connection:
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM products ORDER BY is_active DESC, is_popular DESC, id")
+            cursor.execute(
+                """
+                SELECT *
+                FROM products
+                WHERE lower(name) NOT LIKE 'asd%' AND lower(coalesce(description, '')) NOT LIKE 'asd%'
+                ORDER BY is_active DESC, is_popular DESC, id
+                """
+            )
             return [product_to_api(row) for row in cursor.fetchall()]
 
 
@@ -1250,15 +1532,20 @@ async def admin_product_save(request: Request, fishsite_session: str | None = Co
     payload = await request.json()
     name = (payload.get("name") or "").strip()
     category = (payload.get("category") or payload.get("category_slug") or "fresh").strip()
-    price = int(payload.get("price") or payload.get("price_rub") or 0)
+    try:
+        price = int(payload.get("price") or payload.get("price_rub") or 0)
+        stock = max(0, float(payload.get("stock") or payload.get("stock_quantity") or 0))
+        popularity = max(0, int(payload.get("popularity") or 0))
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="Цена, остаток и популярность должны быть числами")
     if not name or price <= 0:
         raise HTTPException(status_code=400, detail="Заполните название и корректную цену")
     values = {
         "category": category,
         "name": name,
         "price": price,
-        "stock": max(0, float(payload.get("stock") or payload.get("stock_quantity") or 0)),
-        "popularity": max(0, int(payload.get("popularity") or 0)),
+        "stock": stock,
+        "popularity": popularity,
         "image_path": (payload.get("image") or payload.get("image_path") or "").strip() or None,
         "image_symbol": (payload.get("imageSymbol") or payload.get("image_symbol") or "").strip() or None,
         "description": (payload.get("description") or "").strip(),
@@ -1274,7 +1561,10 @@ async def admin_product_save(request: Request, fishsite_session: str | None = Co
             cursor.execute("SELECT slug FROM categories WHERE slug = %s", (values["category"],))
             if not cursor.fetchone():
                 raise HTTPException(status_code=400, detail="Категория не найдена")
-            product_id = int(payload.get("id") or 0)
+            try:
+                product_id = int(payload.get("id") or 0)
+            except (TypeError, ValueError):
+                raise HTTPException(status_code=400, detail="Передайте корректный товар")
             if product_id:
                 cursor.execute(
                     """
@@ -1326,7 +1616,10 @@ async def admin_product_upload(request: Request, fishsite_session: str | None = 
         raise HTTPException(status_code=400, detail="Передайте изображение PNG, JPG или WebP")
     extension = "jpg" if match.group(1) == "jpeg" else match.group(1)
     clean_name = f"{Path(filename).stem[:48] or 'product-image'}-{secrets.token_hex(5)}.{extension}"
-    image_bytes = base64.b64decode(match.group(2), validate=True)
+    try:
+        image_bytes = base64.b64decode(match.group(2), validate=True)
+    except (binascii.Error, ValueError):
+        raise HTTPException(status_code=400, detail="Некорректные данные изображения")
     if len(image_bytes) > 5 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Файл слишком большой, максимум 5 МБ")
 
@@ -1345,7 +1638,10 @@ async def admin_product_upload(request: Request, fishsite_session: str | None = 
 async def admin_product_delete(request: Request, fishsite_session: str | None = Cookie(default=None)) -> dict[str, bool]:
     require_admin(fishsite_session)
     payload = await request.json()
-    product_id = int(payload.get("id") or payload.get("productId") or 0)
+    try:
+        product_id = int(payload.get("id") or payload.get("productId") or 0)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="Передайте корректный товар")
     if product_id <= 0:
         raise HTTPException(status_code=400, detail="Передайте товар")
     with connect() as connection:
@@ -1353,6 +1649,29 @@ async def admin_product_delete(request: Request, fishsite_session: str | None = 
             cursor.execute("UPDATE products SET is_active = false, updated_at = now() WHERE id = %s", (product_id,))
         connection.commit()
     return {"ok": True}
+
+
+@app.post("/api/admin/products/out-of-stock")
+async def admin_product_out_of_stock(request: Request, fishsite_session: str | None = Cookie(default=None)) -> dict[str, Any]:
+    require_admin(fishsite_session)
+    payload = await request.json()
+    try:
+        product_id = int(payload.get("id") or payload.get("productId") or 0)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="Передайте корректный товар")
+    if product_id <= 0:
+        raise HTTPException(status_code=400, detail="Передайте товар")
+    with connect() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "UPDATE products SET stock_quantity = 0, updated_at = now() WHERE id = %s RETURNING *",
+                (product_id,),
+            )
+            row = cursor.fetchone()
+            if not row:
+                raise HTTPException(status_code=404, detail="Товар не найден")
+        connection.commit()
+    return product_to_api(row)
 
 
 @app.post("/api/admin/orders/status")
@@ -1395,6 +1714,11 @@ async def admin_order_status(request: Request, fishsite_session: str | None = Co
 
 @app.get("/")
 def site_index() -> FileResponse:
+    return FileResponse(PROJECT_DIR / "index.html")
+
+
+@app.get("/index.html")
+def site_index_html() -> FileResponse:
     return FileResponse(PROJECT_DIR / "index.html")
 
 
